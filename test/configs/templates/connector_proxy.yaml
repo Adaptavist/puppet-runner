@@ -1,0 +1,14 @@
+---
+
+prefixes:
+    - "application_"
+    - "connector_"
+
+avstapp::conf:
+  "%{::application_instance_name}":
+    connectors:
+      - scheme:      "%{::connector_scheme}"
+        http_port:   "%{::connector_app_port}"
+        proxy_name:  "%{::connector_host_name}"
+        proxy_port:  "%{::connector_port}"
+

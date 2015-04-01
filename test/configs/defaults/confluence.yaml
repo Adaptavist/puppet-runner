@@ -1,0 +1,20 @@
+---
+
+#confluence_host_name: ""
+#confluence_license: ""
+
+confluence_instance_name: "confluence"
+confluence_version: '5.2.5'
+confluence_context_path: ""
+confluence_app_shutport: 8012
+confluence_app_port: 8090
+confluence_admin_user: "admin"
+confluence_admin_pass: "administrator"
+confluence_admin_full_name: "Admin Admin"
+confluence_admin_email: "admin@adaptavist.com"
+confluence_database_name: "confluence"
+confluence_database_user: "confluence"
+confluence_database_pass: "confluence"
+confluence_JVM_MINIMUM_MEMORY: '512m'
+confluence_JVM_MAXIMUM_MEMORY: '1024m'
+confluence_JVM_MAX_PERM_SIZE: '256m'

@@ -1,0 +1,28 @@
+---
+
+functionalities:
+# In honor of Henry... 
+  0_global:
+    # - baseusers
+  1_app:
+    - confluence: "conf1_"
+    - confluence: "conf2_"
+    - jira
+  2_connectors:
+    - connector_proxy:
+        "application_": "conf1_"
+        "connector_": "connector1_"
+    - connector_proxy: 
+        "application_": "conf1_"
+        "connector_": "connector2_"
+    - connector_proxy: 
+        "application_": "conf2_"
+        "connector_": "connector3_"
+    - connector_proxy: 
+        "application_": "jira_"
+        "connector_": "connector4_"
+  3_database:
+    - mysql: "jira1_"
+    - mysql: "confluence1_"
+    - mysql: "confluence2_"
+

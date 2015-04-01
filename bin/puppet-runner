@@ -1,0 +1,184 @@
+require 'fileutils'
+require 'yaml'
+require 'set'
+require 'pathname'
+require 'deep_merge'
+require 'docopt'
+require 'colorize'
+require 'facter'
+
+doc = <<DOCOPT
+Adaptavist puppet runner
+
+Usage:
+  puppet-runner (prepare|start|all) [-c CONFIG_DIR] [-t TEMPLATES] [-d DESTINATION_DIR] [-f FACTS_DEST] [-s SERVERNAME] [-p PUPPET_APPLY]
+  puppet-runner -h | --help
+
+Options:
+  -h --help                                       Show this screen.
+  -s SERVERNAME --servername SERVERNAME           Custom identification of server, hostname fact if not provided
+  -c CONFIG_DIR --config_dir CONFIG_DIR           Hiera configuration directory, must ontain <hostname>.yaml and <hostname>_facts.yaml
+  -d DESTINATION_DIR --dest_dir DESTINATION_DIR   Directory for result hiera config.
+  -t TEMPLATES --templates TEMPLATES              Directory containing templates and defaults folder with functionality templates and default facts
+  -f FACTS_DEST --facts_dest_dir FACTS_DEST       Destination directory to store result facts
+  -p PUPPET_APPLY --puppet_apply PUPPET_APPLY     Custom puppet apply command to run
+
+Commands:
+  all           Runs the following commands prepare, start 
+  start         Runs puppet apply 
+  prepare       Creates result hiera config as a composition of functionalities based on config, merges provided facts with defaults
+DOCOPT
+
+
+def path_join_glob(dir, file_pattern)
+    "#{dir}/#{file_pattern}"
+end
+
+def debug(msg)
+    puts msg.green
+end
+
+begin
+    options = Docopt::docopt(doc)
+rescue Docopt::Exit => e
+    abort(e.message.red)
+end
+
+if options['all'] || options['prepare']
+    input_dir = options["--config_dir"] || options["-c"] 
+    dest_dir = options["--dest_dir"] || options["-d"]
+    facts_dest_dir = options["--facts_dest_dir"] || options["-f"]
+    templates = options["--templates"] || options["-t"]
+
+    hostname = options["--servername"] || options["-s"] || Facter.value("hostname")
+    puts "Hostname #{hostname}"
+
+
+    config_file_path = path_join_glob(input_dir, hostname+".yaml")
+    templates_dir = path_join_glob(templates, "templates")
+    def_facts_dir = path_join_glob(templates, "defaults")
+    debug "Reading #{config_file_path}"
+    if File.file? config_file_path and File.directory? templates_dir and File.directory? def_facts_dir and File.directory? dest_dir and File.directory? facts_dest_dir
+        config = YAML.load_file(config_file_path)
+    else
+        abort "Can not find config file #{config_file_path}. \
+         or #{templates_dir}. \
+         or #{def_facts_dir}. \
+         or #{dest_dir}. \
+         or #{facts_dest_dir}.".red
+    end
+
+    functionalities = config["functionalities"]
+
+    output_file_path = path_join_glob(dest_dir, "#{hostname}.yaml")
+    output_facts_file_path = path_join_glob(facts_dest_dir, "#{hostname}_facts.yaml")
+    if File.file? output_file_path
+      FileUtils.rm output_file_path
+    end
+    if File.file? output_facts_file_path
+      FileUtils.rm output_facts_file_path
+    end
+    debug "Writing to #{output_file_path}"
+    result_template = {}
+    result_default_facts = {}
+      # functionalities:
+      # # In honor of Henry... 
+      #   1_app:
+      #     - confluence: "conf1"
+      #     - confluence: "conf2"
+      #     - jira
+      #   2_database:
+      #     - mysql
+
+      functionalities.keys.sort.each do |key|
+        next unless functionalities[key]
+          
+        functionalities[key].each do |to_add|
+          
+          if to_add.is_a?(Hash)
+            template_to_add = path_join_glob(templates_dir, "#{to_add.keys[0]}.yaml")
+            facts_to_add = path_join_glob(def_facts_dir, "#{to_add.keys[0]}.yaml")
+          else
+            template_to_add = path_join_glob(templates_dir, "#{to_add}.yaml")
+            facts_to_add = path_join_glob(def_facts_dir, "#{to_add}.yaml")
+          end
+
+          debug "Adding template #{template_to_add}"
+          debug "Adding facts #{facts_to_add}"
+          if File.file? template_to_add and File.file? facts_to_add
+            # prefix is defined, must replace
+            data = YAML.load_file(template_to_add)
+            default_facts = YAML.load_file(facts_to_add)
+            prefixes = data["prefixes"]
+
+            data_as_string = data.to_s
+            facts_as_string = default_facts.to_s
+
+            if to_add.is_a?(Hash)
+              # if prefixes are not defined skip replacing
+              if prefixes
+          
+                # in case of hash, replace each otherwise replace all with prefix
+                if to_add.values[0].is_a?(Hash)
+                  to_add.values[0].keys.each do |prefix_key|
+                    
+                    prefixes.each do |prefix|
+                      if prefix == prefix_key
+                        replace_prefixes_with = to_add.values[0][prefix_key]
+                        debug "will substiture: #{prefix} with #{replace_prefixes_with}"
+                        data_as_string = data_as_string.gsub(/\%{::#{prefix}/, "\%{::#{replace_prefixes_with}")
+                        facts_as_string = facts_as_string.gsub(/#{prefix}/, "#{replace_prefixes_with}")
+                      end
+                    end
+                  end
+
+                else 
+                  replace_prefixes_with = to_add.values[0]
+                  prefixes.each do |prefix|
+                    debug "will substitute: #{prefix} with #{replace_prefixes_with}"
+                    data_as_string = data_as_string.gsub(/\%{::#{prefix}/, "\%{::#{replace_prefixes_with}")
+                    facts_as_string = facts_as_string.gsub(/#{prefix}/, "#{replace_prefixes_with}")
+                  end
+                end
+              end
+
+              template = eval (data_as_string)
+              default_facts_prefixed = eval (facts_as_string)
+              
+            else
+              template = YAML.load_file(template_to_add)
+              default_facts_prefixed = YAML.load_file(facts_to_add)
+            end
+            result_template.deep_merge!(template)
+            result_default_facts.deep_merge!(default_facts_prefixed)
+          else
+            abort "Can not find template in templates folder #{template_to_add} or #{facts_to_add}".red
+          end
+        end
+      end
+    File.open(output_file_path, 'w+') do |output_file|
+      YAML.dump(result_template, output_file)
+    end
+    custom_facts_path = path_join_glob(input_dir, "#{hostname}_facts.yaml")
+    custom_facts = YAML.load_file(custom_facts_path)
+    File.open(output_facts_file_path, 'w+') do |output_file|
+        YAML.dump(result_default_facts.deep_merge!(custom_facts, {:merge_hash_arrays => true}), output_file)
+        # result_default_facts.keys.each do |key|
+        #   puts "Adding fact: #{key.to_sym} -> #{result_default_facts[key]}"
+        #   Facter.add(key.to_sym) do
+        #   setcode do
+        #       result_default_facts[key]
+        #     end
+        #   end
+        # end
+    end
+end
+
+# start puppet 
+if options['start'] || options['all']
+    puppet_command = "puppet apply /etc/puppet/manifests/site.pp --confdir=/etc/puppet  --verbose --detailed-exitcodes"
+    to_execute = options["--puppet_apply"] || options["-p"] || puppet_command
+    debug "Running #{to_execute}"
+    puts `#{to_execute}`
+end
+

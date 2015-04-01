@@ -1,0 +1,38 @@
+---
+
+prefixes: 
+    - "confluence_"
+
+# required_fields:
+#     - "confluence_license"
+#     - "confluence_host_name"
+
+# ---------
+
+classes:
+  - avstapp
+
+avstapp::conf:
+  "%{::confluence_instance_name}":
+    version: "%{::confluence_version}" # '5.2.5'
+    application_type: confluence
+    context_path: "%{::confluence_context_path}"
+    shutport: "%{::confluence_app_shutport}"
+    tarball_location_url: "http://www.atlassian.com/software/confluence/downloads/binary/atlassian-confluence-%{::confluence_version}.tar.gz"
+    base_url: "https://%{::confluence_host_name}"
+    avst_wizard_properties:
+      license: "%{::confluence_license}"
+      admin_user: "%{::confluence_admin_user}"
+      admin_pass: "%{::confluence_admin_pass}"
+      admin_full_name: "%{::confluence_admin_full_name}"
+      admin_email: "%{::confluence_admin_email}"
+      database_url: "jdbc:mysql://localhost/%{::confluence_database_name}?sessionVariables=storage_engine%3DInnoDB"
+      database_user: "%{::confluence_database_user}"
+      database_pass: "%{::confluence_database_pass}"
+    drivers:
+      location_path:
+        - '/etc/puppet/files/bins/mysql-connector-java-5.1.22-bin.jar'
+    java_flags:
+        JVM_MINIMUM_MEMORY: "%{::confluence_JVM_MINIMUM_MEMORY}" #'512m'
+        JVM_MAXIMUM_MEMORY: "%{::confluence_JVM_MAXIMUM_MEMORY}" #'1024m'
+        JVM_MAX_PERM_SIZE: "%{::confluence_JVM_MAX_PERM_SIZE}" #'256m'

@@ -1,0 +1,36 @@
+---
+
+classes:
+    - avstapp
+
+prefixes: 
+    - "jira_"
+
+avstapp::conf:
+  "%{::jira_instance_name}":
+    version: "%{::jira_version}" # '6.2.7'
+    application_type: jira
+    context_path: "%{::jira_context_path}"
+    shutport: "%{::jira_app_shutport}" #8009
+    tarball_location_url: "http://www.atlassian.com/software/jira/downloads/binary/atlassian-jira-%{::jira_version}.tar.gz"
+    base_url: "https://%{::jira_host_name}"
+    avst_wizard_properties:
+      admin_user: "%{::jira_admin_user}"
+      admin_pass: "%{::jira_admin_pass}"
+      admin_full_name: "%{::jira_admin_full_name}"
+      admin_email: "%{::jira_admin_email}"
+      mail_server_user: "admin" 
+      mail_server_pass: "admin"
+      database_url: "localhost"
+      database_user: "%{::jira_database_user}"
+      database_pass: "%{::jira_database_pass}"
+      database_name: "%{::jira_database_name}"
+      instance_name: "%{::jira_app_instance_name}"
+      license: "%{::jira_license}"
+    drivers:
+      location_path:
+        - '/etc/puppet/files/bins/mysql-connector-java-5.1.22-bin.jar'
+    java_flags:
+        JVM_MINIMUM_MEMORY: "%{::jira_JVM_MINIMUM_MEMORY}" #'512m'
+        JVM_MAXIMUM_MEMORY: "%{::jira_JVM_MAXIMUM_MEMORY}" #'1024m'
+        JVM_MAX_PERM_SIZE: "%{::jira_JVM_MAX_PERM_SIZE}" #'256m'

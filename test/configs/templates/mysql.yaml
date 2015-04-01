@@ -1,0 +1,18 @@
+---
+
+classes:
+    - database
+
+prefixes:
+    - "database_db_"
+
+database_type: 'mysql'
+
+database::conf:
+  "%{::database_db_database_name}":
+    host:     'localhost'
+    collate:  'utf8_bin'
+    charset:  'utf8'
+    user:     "%{::database_db_database_user}"
+    password: "%{::database_db_database_pass}"
+    name:     "%{::database_db_database_name}"
