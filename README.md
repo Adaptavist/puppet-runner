@@ -8,22 +8,23 @@ Executable gem that composes hiera configuration and facts and execute puppet ap
 
 ## Usage
 
-Usage:
-  puppet-runner (prepare|start|all) [-c CONFIG_DIR] [-t TEMPLATES] [-d DESTINATION_DIR] [-f FACTS_DEST] [-s SERVERNAME]
-  puppet-runner -h | --help
+*  puppet-runner (prepare|start|all) [-c CONFIG_DIR] [-t TEMPLATES] [-d DESTINATION_DIR] [-f FACTS_DEST] [-s SERVERNAME]
+*  puppet-runner -h | --help
 
 Options:
-  -h --help                                       Show this screen.
-  -s SERVERNAME --servername SERVERNAME           Custom identification of server, hostname fact if not provided
-  -c CONFIG_DIR --config_dir CONFIG_DIR           Hiera configuration directory, must ontain "hostname".yaml and "hostname"_facts.yaml
-  -d DESTINATION_DIR --dest_dir DESTINATION_DIR   Directory for result hiera config.
-  -t TEMPLATES --templates TEMPLATES              Directory containing templates and defaults folder with functionality templates and default facts
-  -f FACTS_DEST --facts_dest_dir FACTS_DEST       Destination directory to store result facts
+
+*  -h --help                                       Show this screen.
+*  -s SERVERNAME --servername SERVERNAME           Custom identification of server, hostname fact if not provided
+*  -c CONFIG_DIR --config_dir CONFIG_DIR           Hiera configuration directory, must ontain "hostname".yaml and "hostname"_facts.yaml
+*  -d DESTINATION_DIR --dest_dir DESTINATION_DIR   Directory for result hiera config.
+*  -t TEMPLATES --templates TEMPLATES              Directory containing templates and defaults folder with functionality templates and default facts
+*  -f FACTS_DEST --facts_dest_dir FACTS_DEST       Destination directory to store result facts
 
 Commands:
-  all           Runs the following commands prepare, start 
-  start         Runs puppet apply 
-  prepare       Creates result hiera config as a composition of functionalities based on config, merges provided facts with defaults
+
+*  all           Runs the following commands prepare, start 
+*  start         Runs puppet apply 
+*  prepare       Creates result hiera config as a composition of functionalities based on config, merges provided facts with defaults
 
 
 ## Contributing
