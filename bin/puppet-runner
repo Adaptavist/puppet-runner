@@ -38,11 +38,17 @@ def debug(msg)
     puts msg.green
 end
 
+def warning(msg)
+    puts msg.yellow
+end
+
 begin
     options = Docopt::docopt(doc)
 rescue Docopt::Exit => e
     abort(e.message.red)
 end
+
+stop_apply = false
 
 if options['all'] || options['prepare']
     input_dir = options["--config_dir"] || options["-c"] 
@@ -81,6 +87,7 @@ if options['all'] || options['prepare']
     debug "Writing to #{output_file_path}"
     result_template = {}
     result_default_facts = {}
+    prefixed_required_facts = Set.new
       # functionalities:
       # # In honor of Henry... 
       #   1_app:
@@ -110,6 +117,7 @@ if options['all'] || options['prepare']
             data = YAML.load_file(template_to_add)
             default_facts = YAML.load_file(facts_to_add)
             prefixes = data["prefixes"]
+            required_facts = data["required_facts"] || []
 
             data_as_string = data.to_s
             facts_as_string = default_facts.to_s
@@ -128,6 +136,7 @@ if options['all'] || options['prepare']
                         debug "will substiture: #{prefix} with #{replace_prefixes_with}"
                         data_as_string = data_as_string.gsub(/\%{::#{prefix}/, "\%{::#{replace_prefixes_with}")
                         facts_as_string = facts_as_string.gsub(/#{prefix}/, "#{replace_prefixes_with}")
+                        prefixed_required_facts = prefixed_required_facts.merge(required_facts.map! { |item| item.gsub(/#{prefix}/, "#{replace_prefixes_with}") })
                       end
                     end
                   end
@@ -138,6 +147,7 @@ if options['all'] || options['prepare']
                     debug "will substitute: #{prefix} with #{replace_prefixes_with}"
                     data_as_string = data_as_string.gsub(/\%{::#{prefix}/, "\%{::#{replace_prefixes_with}")
                     facts_as_string = facts_as_string.gsub(/#{prefix}/, "#{replace_prefixes_with}")
+                    prefixed_required_facts = prefixed_required_facts.merge(required_facts.map! { |item| item.gsub(/#{prefix}/, "#{replace_prefixes_with}") })
                   end
                 end
               end
@@ -148,34 +158,47 @@ if options['all'] || options['prepare']
             else
               template = YAML.load_file(template_to_add)
               default_facts_prefixed = YAML.load_file(facts_to_add)
+              prefixed_required_facts = prefixed_required_facts.merge(required_facts)
             end
             result_template.deep_merge!(template)
             result_default_facts.deep_merge!(default_facts_prefixed)
+
           else
             abort "Can not find template in templates folder #{template_to_add} or #{facts_to_add}".red
           end
         end
       end
-    File.open(output_file_path, 'w+') do |output_file|
-      YAML.dump(result_template, output_file)
-    end
-    custom_facts_path = path_join_glob(input_dir, "#{hostname}_facts.yaml")
-    custom_facts = YAML.load_file(custom_facts_path)
-    File.open(output_facts_file_path, 'w+') do |output_file|
-        YAML.dump(result_default_facts.deep_merge!(custom_facts, {:merge_hash_arrays => true}), output_file)
-        # result_default_facts.keys.each do |key|
-        #   puts "Adding fact: #{key.to_sym} -> #{result_default_facts[key]}"
-        #   Facter.add(key.to_sym) do
-        #   setcode do
-        #       result_default_facts[key]
-        #     end
-        #   end
-        # end
-    end
+      # Write results
+      File.open(output_file_path, 'w+') do |output_file|
+        YAML.dump(result_template, output_file)
+      end
+      custom_facts_path = path_join_glob(input_dir, "#{hostname}_facts.yaml")
+      custom_facts = YAML.load_file(custom_facts_path) || {}
+      File.open(output_facts_file_path, 'w+') do |output_file|
+        result_default_facts.deep_merge!(custom_facts, {:merge_hash_arrays => true})
+        YAML.dump(result_default_facts, output_file)
+      end
+      
+      # Check that all required prefixed facts are present
+      if prefixed_required_facts && !prefixed_required_facts.empty?
+        not_provided_required_facts = prefixed_required_facts - custom_facts.keys
+        nil_value_facts = result_default_facts.select{|key, val| val == nil}
+
+        if !not_provided_required_facts.empty? or !nil_value_facts.empty?
+          not_provided_required_facts.merge(nil_value_facts.keys)
+          warning "You have to provide all required fields, they will default to empty string and puppet will fail: "
+          not_provided_required_facts.each do |f|
+            warning "#{f}"
+          end
+          warning "Puppet apply will not run as it will fail without those facts provided!"
+          stop_apply = true
+        end
+      end      
 end
 
+
 # start puppet 
-if options['start'] || options['all']
+if (options['start'] || options['all']) && !stop_apply
     puppet_command = "puppet apply /etc/puppet/manifests/site.pp --confdir=/etc/puppet  --verbose --detailed-exitcodes"
     to_execute = options["--puppet_apply"] || options["-p"] || puppet_command
     debug "Running #{to_execute}"

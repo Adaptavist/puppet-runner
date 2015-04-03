@@ -3,11 +3,9 @@
 prefixes: 
     - "confluence_"
 
-# required_fields:
-#     - "confluence_license"
-#     - "confluence_host_name"
-
-# ---------
+required_facts:
+    - "confluence_license"
+    - "confluence_host_name"
 
 classes:
   - avstapp
