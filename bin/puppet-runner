@@ -42,6 +42,28 @@ def warning(msg)
     puts msg.yellow
 end
 
+def extract_value_from_hash(input)
+  input.map{|key, val| 
+    if val.is_a?(Hash)
+      value = val["value"]
+    else
+      value = val
+    end
+    {key => value}
+  }
+end
+
+def extract_comment_from_hash(input)
+  input.map{|key, val| 
+    if val != nil
+      value = val["comment"]
+    else
+      value = nil
+    end
+    {key => value}
+  }
+end
+
 begin
     options = Docopt::docopt(doc)
 rescue Docopt::Exit => e
@@ -88,6 +110,7 @@ if options['all'] || options['prepare']
     result_template = {}
     result_default_facts = {}
     prefixed_required_facts = Set.new
+    prefixed_facts_comments = {}
       # functionalities:
       # # In honor of Henry... 
       #   1_app:
@@ -120,8 +143,10 @@ if options['all'] || options['prepare']
             required_facts = data["required_facts"] || []
 
             data_as_string = data.to_s
-            facts_as_string = default_facts.to_s
+            facts_as_string = extract_value_from_hash(default_facts).to_s
 
+            fact_comments_as_string = extract_comment_from_hash(default_facts).to_s
+            
             if to_add.is_a?(Hash)
               # if prefixes are not defined skip replacing
               if prefixes
@@ -136,6 +161,7 @@ if options['all'] || options['prepare']
                         debug "will substiture: #{prefix} with #{replace_prefixes_with}"
                         data_as_string = data_as_string.gsub(/\%{::#{prefix}/, "\%{::#{replace_prefixes_with}")
                         facts_as_string = facts_as_string.gsub(/#{prefix}/, "#{replace_prefixes_with}")
+                        fact_comments_as_string = fact_comments_as_string.gsub(/#{prefix}/, "#{replace_prefixes_with}")
                         prefixed_required_facts = prefixed_required_facts.merge(required_facts.map! { |item| item.gsub(/#{prefix}/, "#{replace_prefixes_with}") })
                       end
                     end
@@ -147,6 +173,7 @@ if options['all'] || options['prepare']
                     debug "will substitute: #{prefix} with #{replace_prefixes_with}"
                     data_as_string = data_as_string.gsub(/\%{::#{prefix}/, "\%{::#{replace_prefixes_with}")
                     facts_as_string = facts_as_string.gsub(/#{prefix}/, "#{replace_prefixes_with}")
+                    fact_comments_as_string = fact_comments_as_string.gsub(/#{prefix}/, "#{replace_prefixes_with}")
                     prefixed_required_facts = prefixed_required_facts.merge(required_facts.map! { |item| item.gsub(/#{prefix}/, "#{replace_prefixes_with}") })
                   end
                 end
@@ -154,15 +181,18 @@ if options['all'] || options['prepare']
 
               template = eval (data_as_string)
               default_facts_prefixed = eval (facts_as_string)
-              
+              default_fact_comments = eval (fact_comments_as_string)
             else
               template = YAML.load_file(template_to_add)
-              default_facts_prefixed = YAML.load_file(facts_to_add)
+              plain_facts = YAML.load_file(facts_to_add)
+              default_facts_prefixed = extract_value_from_hash(plain_facts)
+              default_fact_comments = extract_comment_from_hash(plain_facts)  
               prefixed_required_facts = prefixed_required_facts.merge(required_facts)
             end
             result_template.deep_merge!(template)
-            result_default_facts.deep_merge!(default_facts_prefixed)
-
+            # default_facts_prefixed is Array of hashes as the result of map, this will create hash from it
+            result_default_facts.merge!(default_facts_prefixed.reduce Hash.new, :merge)
+            prefixed_facts_comments.merge!(default_fact_comments.reduce Hash.new, :merge)
           else
             abort "Can not find template in templates folder #{template_to_add} or #{facts_to_add}".red
           end
@@ -175,15 +205,21 @@ if options['all'] || options['prepare']
       custom_facts_path = path_join_glob(input_dir, "#{hostname}_facts.yaml")
       custom_facts = YAML.load_file(custom_facts_path) || {}
       File.open(output_facts_file_path, 'w+') do |output_file|
-        result_default_facts.deep_merge!(custom_facts, {:merge_hash_arrays => true})
-        YAML.dump(result_default_facts, output_file)
+        output_result_default_facts = result_default_facts.deep_merge!(custom_facts, {:merge_hash_arrays => true}).to_yaml
+        prefixed_facts_comments.each do |pattern, replacement|
+          if replacement != nil
+            output_result_default_facts.gsub!(pattern, "\##{replacement}\n#{pattern}")
+          end
+        end
+        output_file.write(output_result_default_facts)
       end
       
-      # Check that all required prefixed facts are present
-      if prefixed_required_facts && !prefixed_required_facts.empty?
-        not_provided_required_facts = prefixed_required_facts - custom_facts.keys
-        nil_value_facts = result_default_facts.select{|key, val| val == nil}
+      nil_value_facts = result_default_facts.select{|key, val| val == nil}
 
+      # Check that all required prefixed facts are present
+        if (prefixed_required_facts && !prefixed_required_facts.empty?) or !nil_value_facts.empty?
+        not_provided_required_facts = prefixed_required_facts - custom_facts.keys
+        
         if !not_provided_required_facts.empty? or !nil_value_facts.empty?
           not_provided_required_facts.merge(nil_value_facts.keys)
           warning "You have to provide all required fields, they will default to empty string and puppet will fail: "
@@ -199,7 +235,7 @@ end
 
 # start puppet 
 if (options['start'] || options['all']) && !stop_apply
-    puppet_command = "puppet apply /etc/puppet/manifests/site.pp --confdir=/etc/puppet  --verbose --detailed-exitcodes"
+    puppet_command = "sudo su -c 'source /usr/local/rvm/scripts/rvm; puppet apply /etc/puppet/manifests/site.pp --confdir=/etc/puppet  --verbose --detailed-exitcodes'"
     to_execute = options["--puppet_apply"] || options["-p"] || puppet_command
     debug "Running #{to_execute}"
     puts `#{to_execute}`

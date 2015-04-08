@@ -1,7 +1,7 @@
 ---
 
-#confluence_host_name: ""
-#confluence_license: ""
+confluence_host_name:
+confluence_license:
 
 confluence_instance_name: "confluence"
 confluence_version: '5.2.5'
