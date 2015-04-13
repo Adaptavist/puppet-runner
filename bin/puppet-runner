@@ -43,25 +43,33 @@ def warning(msg)
 end
 
 def extract_value_from_hash(input)
-  input.map{|key, val| 
-    if val.is_a?(Hash)
-      value = val["value"]
-    else
-      value = val
-    end
-    {key => value}
-  }
+  res = {}
+  if input
+    res = input.map{|key, val| 
+      if val.is_a?(Hash)
+        value = val["value"]
+      else
+        value = val
+      end
+      {key => value}
+    }
+  end
+  res
 end
 
 def extract_comment_from_hash(input)
-  input.map{|key, val| 
-    if val != nil
-      value = val["comment"]
-    else
-      value = nil
-    end
-    {key => value}
-  }
+  res = {}
+  if input
+    res = input.map{|key, val| 
+      if val != nil
+        value = val["comment"]
+      else
+        value = nil
+      end
+      {key => value}
+    }
+  end
+  res
 end
 
 begin
@@ -137,9 +145,9 @@ if options['all'] || options['prepare']
           debug "Adding facts #{facts_to_add}"
           if File.file? template_to_add and File.file? facts_to_add
             # prefix is defined, must replace
-            data = YAML.load_file(template_to_add)
-            default_facts = YAML.load_file(facts_to_add)
-            prefixes = data["prefixes"]
+            data = YAML.load_file(template_to_add) || {}
+            default_facts = YAML.load_file(facts_to_add) || {}
+            prefixes = data["prefixes"] || []
             required_facts = data["required_facts"] || []
 
             data_as_string = data.to_s
