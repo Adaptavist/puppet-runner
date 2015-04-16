@@ -60,9 +60,14 @@ end
 def extract_comment_from_hash(input)
   res = {}
   if input
-    res = input.map{|key, val| 
+    res = input.map{|key, val|
+
       if val != nil
-        value = val["comment"]
+        if val.is_a?(Hash)
+          value = val["comment"]
+        else
+          value = nil
+        end
       else
         value = nil
       end
