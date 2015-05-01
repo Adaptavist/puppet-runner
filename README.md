@@ -8,7 +8,7 @@ Executable gem that composes hiera configuration and facts and execute puppet ap
 
 ## Usage
 
-*  puppet-runner (prepare|start|all) [-c CONFIG_DIR] [-t TEMPLATES] [-d DESTINATION_DIR] [-f FACTS_DEST] [-s SERVERNAME]
+*  puppet-runner (prepare|start|all) [-c CONFIG_DIR] [-t TEMPLATES] [-d DESTINATION_DIR] [-f FACTS_DEST] [-s SERVERNAME] [-r PUPPETFILE_CONFIG] [-o PUPPETFILE_OUTPUT_PATH]
 *  puppet-runner -h | --help
 
 
@@ -104,6 +104,7 @@ Each template contains:
 * classes - list of classes to include for this template
 * required_fields - list of required facts for this setup, in case not provided the processing will fail with warning
 * template specific parametrized setup - see examples provided
+* dependencies - all modules required to include to Puppetfile, must contain all recursive deps.
 
 - defaults - default values for facts
 
@@ -117,7 +118,26 @@ Destination directory for composed hiera setup. Usually pointing to /etc/puppet/
 
 Destination directory for composed facts setup. Usually pointing to /etc/puppet/environments/production/modules/hosts/facts.d to be loaded by puppet apply.
 
-Options:
+#### PUPPETFILE_CONFIG
+
+Config file with puppet modules details. Modules dependencies are referenced in templates config via key in dependencies array.
+
+Format:
+
+```
+mkhomedir: 
+    name: 'adaptavist/mkhomedir'
+    repo: 'ssh://git@stash.adaptavist.com:7999/pup/puppet-mkhomedir.git'
+    repo_type: "tag"
+    ref_value: '0.1.2'
+    ref_type: 'git'
+```
+
+#### PUPPETFILE_OUTPUT_PATH
+
+Path to output Puppetfile. 
+
+### Options:
 
 *  -h --help                                       Show this screen.
 *  -s SERVERNAME --servername SERVERNAME           Custom identification of server, hostname fact if not provided
@@ -125,7 +145,8 @@ Options:
 *  -d DESTINATION_DIR --dest_dir DESTINATION_DIR   Directory for result hiera config.
 *  -t TEMPLATES --templates TEMPLATES              Directory containing templates and defaults folder with functionality templates and default facts
 *  -f FACTS_DEST --facts_dest_dir FACTS_DEST       Destination directory to store result facts
-
+*  -r PUPPETFILE_CONFIG --puppetfile_config puppetfile_config                Puppetfile composition config file
+*  -o PUPPETFILE_OUTPUT_PATH --puppetfile_output_path PUPPETFILE_OUTPUT_PATH Result Puppetfile path
 Commands:
 
 *  all           Runs the following commands prepare, start 

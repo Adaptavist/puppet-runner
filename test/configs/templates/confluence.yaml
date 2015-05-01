@@ -10,6 +10,9 @@ required_facts:
 classes:
   - avstapp
 
+dependencies:
+  - mkhomedir
+
 avstapp::conf:
   "%{::confluence_instance_name}":
     version: "%{::confluence_version}" # '5.2.5'

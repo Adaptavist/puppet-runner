@@ -1,0 +1,297 @@
+---
+
+#!/usr/bin/env ruby
+#^syntax detection
+
+# forge "http://forge.puppetlabs.com"
+
+# -----Monitoring-----
+
+mkhomedir: 
+    name: 'adaptavist/mkhomedir'
+    repo: 'ssh://git@stash.adaptavist.com:7999/pup/puppet-mkhomedir.git'
+    repo_type: "tag"
+    ref_value: '0.1.2'
+    ref_type: 'git'
+
+
+# mod "adaptavist/graphite",
+#  :git => 'ssh://git@stash.adaptavist.com:7999/pup/puppet-graphite.git',
+#  :ref => 'remove-webserver'
+
+# mod "duritong/subversion",
+#   :git =>"git@github.com:Adaptavist/puppet-subversion.git",
+#   :tag => '0.1.1'
+
+# mod "adaptavist/subversion_config",
+#  :git => "ssh://git@stash.adaptavist.com:7999/pup/puppet-subversion_config",
+#  :tag => '0.1.3'
+
+# mod "gini/archive",
+#  :git => "git@github.com:Adaptavist/puppet-archive.git",
+#  :ref => "gini-archive-0.2.0"
+
+# mod "adaptavist/monitoring_server",
+#  :git => "ssh://git@stash.adaptavist.com:7999/pup/puppet-monitoring_server",
+#  :tag => '0.2.2'
+
+# mod "adaptavist/replication",
+#  :git => "ssh://git@stash.adaptavist.com:7999/pup/puppet-replication",
+#  :tag => '0.3.6'
+
+# mod "adaptavist/central_logging",
+#  :git => "ssh://git@stash.adaptavist.com:7999/pup/puppet-central_logging",
+#  :tag => '0.3.2'
+
+# mod "adaptavist/ldap_ssh_keys",
+#  :git => "ssh://git@stash.adaptavist.com:7999/pup/puppet-ldap_ssh_keys.git",
+#  :tag => '0.1.2'
+
+# mod "adaptavist/logstash_forwarder_config",
+#  :git => "ssh://git@stash.adaptavist.com:7999/pup/puppet-logstash_forwarder_config.git",
+#  :tag => '0.1.2'
+
+# # TODO: tag this commit with current tag
+# mod "DanielRedOak/logstash_forwarder",
+#  :git => "git@github.com:Adaptavist/puppet-logstash_forwarder.git",
+#  :commit => "ee7c0390381"
+ 
+# mod "rodjek/logrotate",
+#  :git => "git@github.com:Adaptavist/puppet-logrotate.git",
+#  :tag => 'v1.0.2'
+
+# mod "bfraser/grafana",
+#  :git => "git@github.com:Adaptavist/puppet-grafana.git",
+#  :tag => '0.2.2'
+
+# mod "elasticsearch/logstash",
+#  :git => "git@github.com:Adaptavist/puppet-logstash.git",
+#  :tag => '0.5.1'
+
+# mod "elasticsearch/elasticsearch",
+#  :git => "git@github.com:Adaptavist/puppet-elasticsearch.git",
+#  :tag => '0.4.0'
+
+# mod "thejandroman/kibana3",
+#  :git => "git@github.com:Adaptavist/puppet-kibana3.git",
+#  :tag => '0.0.3'
+
+# mod "puppetlabs/vcsrepo",
+#  :git => "git@github.com:Adaptavist/puppet-vcsrepo.git",
+#  :tag => '1.2.0'
+
+# mod "ispavailability/file_concat",
+#  :git => "git@github.com:Adaptavist/puppet-file_concat.git",
+#  :tag => '0.1.0'
+
+# mod "adaptavist/collectd",
+#  :git => "ssh://git@stash.adaptavist.com:7999/pup/puppet-collectd",
+#  :tag => '0.2.2'
+
+# mod "puppetlabs/firewall",
+#  :git => "git@github.com:Adaptavist/puppet-firewall.git",
+#  :tag => '0.4.2'
+
+# mod "adaptavist-mailserver",
+#  :git => "ssh://git@stash.adaptavist.com:7999/pup/puppet-mailserver",
+#  :tag => '0.1.4'
+
+# mod "adaptavist-mailclient",
+#  :git => "ssh://git@stash.adaptavist.com:7999/pup/puppet-mailclient",
+#  :tag => '0.1.3'
+
+# mod "example42/haproxy",
+#  :git => 'git@github.com:Adaptavist/puppet-haproxy.git',
+#  :tag => '2.0.6'
+
+# mod "example42/postfix",
+#  :git => 'git@github.com:Adaptavist/puppet-postfix.git',
+#  :tag => '2.0.10'
+
+# mod "adaptavist-fw",
+#  :git => "ssh://git@stash.adaptavist.com:7999/pup/puppet-fw",
+#  :tag => '0.1.2'
+
+# mod "puppetlabs/stdlib",
+#  :git => "git@github.com:Adaptavist/puppet-stdlib.git",
+#  :tag => '4.1.0'
+
+# mod "puppetlabs/apache",
+#  :git => "git@github.com:Adaptavist/puppet-apache.git",
+#  :tag => '0.11.0'
+
+# mod "puppetlabs-apt",
+#  :git => 'git@github.com:Adaptavist/puppet-apt.git',
+#  :tag => '1.1.0'
+
+# mod "adaptavist-noconfigpkgs",
+#  :git  => "ssh://git@stash.adaptavist.com:7999/pup/puppet-noconfigpkgs.git",
+#  :tag => '0.1.2'
+
+# mod "puppet/etckeeper",
+#  :git  => "ssh://git@stash.adaptavist.com:7999/pup/puppet-etckeeper.git",
+#  :tag => '0.1.1'
+
+# mod "adaptavist-oracle_java",
+#  :git => 'ssh://git@stash.adaptavist.com:7999/pup/puppet-oracle_java.git',
+#  :tag => '0.2.2'
+
+# mod "adaptavist-packages_repos",
+#  :git => 'ssh://git@stash.adaptavist.com:7999/pup/puppet-packages_repos.git',
+#  :tag => '0.1.2'
+
+# mod "example42/yum",
+#  :git => 'git@github.com:Adaptavist/puppet-yum.git',
+#  :tag => 'v2.1.17'
+
+# mod "puppetlabs/mysql",
+#  :git => 'git@github.com:Adaptavist/puppet-mysql.git',
+#  :tag => '2.1.0'
+
+# mod "puppetlabs-xinetd",
+#  :git => 'git@github.com:Adaptavist/puppet-xinetd.git',
+#  :tag => '1.3.1'
+
+# mod "puppetlabs/postgresql",
+#  :git => 'git@github.com:Adaptavist/puppet-postgresql.git',
+#  :tag => '3.3.3'
+
+# mod "puppetlabs/postgresql",
+#  :git => 'git@github.com:Adaptavist/puppet-postgresql.git',
+#  :tag => '3.3.3'
+
+# mod "adaptavist-postgresconfig",
+#  :git  => "ssh://git@stash.adaptavist.com:7999/pup/puppet-postgresconfig.git",
+#  :tag => '0.0.5'
+
+# mod "adaptavist-mysqlconfig",
+#  :git  => "ssh://git@stash.adaptavist.com:7999/pup/puppet-mysqlconfig.git",
+#  :tag => '0.1.2'
+
+# mod "adaptavist-baseusers",
+#  :git  => "ssh://git@stash.adaptavist.com:7999/pup/puppet-baseusers.git",
+#  :tag => '0.1.2'
+
+# mod "puppet/avstapp",
+#  :git => "ssh://git@stash.adaptavist.com:7999/pup/puppet-avstapp.git",
+#  :tag => "0.2.6"
+
+# mod "adaptavist-database",
+#  :git => "ssh://git@stash.adaptavist.com:7999/pup/puppet-database.git",
+#  :tag => '0.1.2'
+
+# mod "puppetlabs/limits",
+#  :git => "git@github.com:Adaptavist/puppet-limits.git",
+#  :tag => '0.0.2'
+
+# mod "adaptavist-webserver",
+#  :git => 'ssh://git@stash.adaptavist.com:7999/pup/puppet-webserver.git',
+#  :tag => '0.2.3'
+
+# mod "example42/puppi",
+#  :git => "git@github.com:Adaptavist/puppet-puppi.git",
+#  :tag => '2.1.9'
+
+# mod "puppetlabs/concat",
+#  :git => 'git@github.com:Adaptavist/puppet-concat.git',
+#  :tag => '1.1.2'
+
+# mod "example42/monitor",
+#  :git  => "git://github.com/Adaptavist/puppet-monitor.git",
+#  :tag => '2.0.1'
+
+# mod "example42/iptables",
+#  :git  => "git@github.com:Adaptavist/puppet-iptables.git",
+#  :tag => '2.1.3'
+
+# mod "example42/autofs",
+#  :git => 'git@github.com:Adaptavist/puppet-autofs',
+#  :tag => '2.0.13'
+
+# mod "adaptavist-sssd",
+#  :git => 'ssh://git@stash.adaptavist.com:7999/pup/puppet-sssd.git',
+#  :tag => '0.3.2'
+
+# mod "adaptavist-krb5",
+#  :git => 'ssh://git@stash.adaptavist.com:7999/pup/puppet-krb5.git',
+#  :tag => '0.1.2'
+
+# mod "adaptavist-samba",
+#  :git => 'ssh://git@stash.adaptavist.com:7999/pup/puppet-samba.git',
+#  :tag => '0.1.2'
+
+# mod "adaptavist-active_directory_glue",
+#  :git => 'ssh://git@stash.adaptavist.com:7999/pup/puppet-active_directory_glue.git',
+#  :tag => '0.1.2'
+
+# mod "adaptavist-sudo",
+#  :git => "ssh://git@stash.adaptavist.com:7999/pup/puppet-sudo.git",
+#  :tag => '0.1.2'
+
+# mod "adaptavist-nagiosclient",
+#  :git  => "ssh://git@stash.adaptavist.com:7999/pup/puppet-nagiosclient.git",
+#  :tag => '0.1.2'
+
+# mod "adaptavist-simple_networking",
+#  :git  => "ssh://git@stash.adaptavist.com:7999/pup/puppet-simple_networking.git",
+#  :tag => '0.1.3'
+
+# mod "example42/openssh",
+#  :git => "git@github.com:Adaptavist/puppet-openssh",
+#  :tag => '2.0.9'
+
+# mod "puppetlabs/ntp",
+#  :git => "git@github.com:Adaptavist/puppet-ntp.git",
+#  :tag => '3.1.0'
+
+# mod "puppetlabs/stunnel",
+#  :git => "git@github.com:Adaptavist/puppet-stunnel.git",
+#  :tag => '0.0.1'
+
+# mod "adaptavist/stunnel_config",
+#  :git => "ssh://git@stash.adaptavist.com:7999/pup/puppet-stunnel_config.git",
+#  :tag => '0.2.7'
+
+# mod "puppetlabs/rsync",
+#  :git => "git@github.com:Adaptavist/puppet-rsync.git",
+#  :tag => '0.3.1'
+
+# mod "puppetlabs/git",
+#  :git => "git@github.com:Adaptavist/puppet-git.git",
+#  :tag => '0.3.0'
+
+# mod "adaptavist/rsync_config",
+#  :git => "ssh://git@stash.adaptavist.com:7999/pup/puppet-rsync_config.git",
+#  :tag => '0.1.2'
+
+# mod "adaptavist-lsyncd",
+#  :git => "ssh://git@stash.adaptavist.com:7999/pup/puppet-lsyncd.git",
+#  :tag => '0.1.2'
+
+# mod "adaptavist/idmap",
+#  :git => "ssh://git@stash.adaptavist.com:7999/pup/puppet-idmap.git",
+#  :tag => '0.1.2'
+
+# mod "camptocamp/kmod",
+#  :git => "git@github.com:Adaptavist/puppet-kmod.git",
+#  :tag => '0.1.3'
+
+# mod "adaptavist/kmod_config",
+#  :git => "ssh://git@stash.adaptavist.com:7999/pup/puppet-kmod_config.git",
+#  :tag => '0.1.2'
+
+# mod "adaptavist-definer",
+#  :git => "ssh://git@stash.adaptavist.com:7999/pup/puppet-definer.git",
+#  :tag => '0.1.2'
+
+# mod "adaptavist-subversion_edge",
+#  :git => "ssh://git@stash.adaptavist.com:7999/pup/puppet-subversion_edge.git",
+#  :tag => '0.1.2'
+
+# mod "adaptavist-backup",
+#  :git => 'ssh://git@stash.adaptavist.com:7999/pup/puppet-backup.git',
+#  :tag => '0.1.2'
+
+# mod "adaptavist-avst_backup",
+#  :git => 'ssh://git@stash.adaptavist.com:7999/pup/puppet-avst_backup.git',
+#  :tag => '0.1.5'
