@@ -11,7 +11,11 @@ classes:
   - avstapp
 
 dependencies:
-  - mkhomedir
+  - avstapp
+  - stdlib
+  - oracle_java
+  - limits
+  - packages_repos
 
 avstapp::conf:
   "%{::confluence_instance_name}":

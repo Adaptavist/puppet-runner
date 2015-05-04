@@ -1,0 +1,500 @@
+---
+
+mkhomedir: 
+    name: 'adaptavist/mkhomedir'
+    repo: 'ssh://git@stash.adaptavist.com:7999/pup/puppet-mkhomedir.git'
+    repo_type: "tag"
+    ref_value: '0.1.2'
+    ref_type: 'git'
+
+graphite: 
+    name: 'adaptavist/graphite'
+    repo: 'ssh://git@stash.adaptavist.com:7999/pup/puppet-graphite.git'
+    repo_type: "branch"
+    ref_value: 'remove-webserver'
+    ref_type: 'git'
+
+subversion: 
+    name: 'duritong/subversion'
+    repo: 'git@github.com:Adaptavist/puppet-subversion.git'
+    repo_type: "tag"
+    ref_value: '0.1.1'
+    ref_type: 'git'
+
+subversion_config: 
+    name: 'adaptavist/subversion_config'
+    repo: 'ssh://git@stash.adaptavist.com:7999/pup/puppet-subversion_config.git'
+    repo_type: 'tag'
+    ref_value: '0.1.3'
+    ref_type: 'git'
+
+monitoring_server: 
+    name: 'adaptavist/monitoring_server'
+    repo: 'ssh://git@stash.adaptavist.com:7999/pup/puppet-monitoring_server.git'
+    repo_type: 'tag'
+    ref_value: '0.2.2'
+    ref_type: 'git'
+
+archive: 
+    name: 'gini/archive'
+    repo: 'git@github.com:Adaptavist/puppet-archive.git'
+    repo_type: "branch"
+    ref_value: "gini-archive-0.2.0"
+    ref_type: 'git'
+
+replication: 
+    name: 'adaptavist/replication'
+    repo: 'ssh://git@stash.adaptavist.com:7999/pup/puppet-replication.git'
+    repo_type: 'tag'
+    ref_value: '0.3.6'
+    ref_type: 'git'
+
+central_logging: 
+    name: 'adaptavist/central_logging'
+    repo: 'ssh://git@stash.adaptavist.com:7999/pup/puppet-central_logging.git'
+    repo_type: 'tag'
+    ref_type: 'git'
+    ref_value: '0.3.2'
+
+ldap_ssh_keys: 
+    name: 'adaptavist/ldap_ssh_keys'
+    repo: 'ssh://git@stash.adaptavist.com:7999/pup/puppet-ldap_ssh_keys.git'
+    repo_type: 'tag'
+    ref_type: 'git'
+    ref_value: '0.1.2'
+
+logstash_forwarder_config: 
+    name: 'adaptavist/ldap_ssh_keys'
+    repo: 'ssh://git@stash.adaptavist.com:7999/pup/puppet-logstash_forwarder_config.git'
+    repo_type: 'tag'
+    ref_type: 'git'
+    ref_value: '0.1.2'
+
+# # TODO: tag this commit with current tag
+logstash_forwarder: 
+    name: 'DanielRedOak/logstash_forwarder'
+    repo: 'git@github.com:Adaptavist/puppet-logstash_forwarder.git'
+    repo_type: "commit"
+    ref_value: "ee7c0390381"
+    ref_type: 'git'
+
+logrotate: 
+    name: "rodjek/logrotate"
+    repo: 'git@github.com:Adaptavist/puppet-logrotate.git'
+    repo_type: "tag"
+    ref_value: 'v1.0.2'
+    ref_type: 'git'
+
+grafana: 
+    name: "bfraser/grafana"
+    repo: 'git@github.com:Adaptavist/puppet-grafana.git'
+    repo_type: 'tag'
+    ref_value: '0.2.2'
+    ref_type: 'git'
+
+logstash: 
+    name: "elasticsearch/logstash"
+    repo: 'git@github.com:Adaptavist/puppet-logstash.git'
+    repo_type: 'tag'
+    ref_value: '0.5.1'
+    ref_type: 'git'
+
+elasticsearch: 
+    name: "elasticsearch/elasticsearch"
+    repo: 'git@github.com:Adaptavist/puppet-elasticsearch.git'
+    repo_type: 'tag'
+    ref_value: '0.4.0'
+    ref_type: 'git'
+
+kibana3: 
+    name: "thejandroman/kibana3"
+    repo: 'git@github.com:Adaptavist/puppet-kibana3.git'
+    repo_type: 'tag'
+    ref_type: 'git'
+    ref_value: '0.0.3'
+
+vcsrepo: 
+    name: "puppetlabs/vcsrepo"
+    repo: 'git@github.com:Adaptavist/puppet-vcsrepo.git'
+    repo_type: 'tag'
+    ref_type: 'git'
+    ref_value: '1.2.0'
+
+file_concat: 
+    name: "ispavailability/file_concat"
+    repo: 'git@github.com:Adaptavist/puppet-file_concat.git'
+    repo_type: 'tag'
+    ref_type: 'git'
+    ref_value: '0.1.0'
+
+firewall: 
+    name: "puppetlabs/firewall"
+    repo: 'git@github.com:Adaptavist/puppet-firewall.git'
+    repo_type: 'tag'
+    ref_type: 'git'
+    ref_value: '0.4.2'
+
+collectd: 
+    name: 'adaptavist/collectd'
+    repo: 'ssh://git@stash.adaptavist.com:7999/pup/puppet-collectd.git'
+    repo_type: 'tag'
+    ref_type: 'git'
+    ref_value: '0.2.2'
+
+mailserver: 
+    name: 'adaptavist/mailserver'
+    repo: 'ssh://git@stash.adaptavist.com:7999/pup/puppet-mailserver.git'
+    repo_type: 'tag'
+    ref_type: 'git'
+    ref_value: '0.1.4'
+
+mailclient: 
+    name: 'adaptavist/mailclient'
+    repo: 'ssh://git@stash.adaptavist.com:7999/pup/puppet-mailclient.git'
+    repo_type: 'tag'
+    ref_type: 'git'
+    ref_value: '0.1.3'
+
+fw: 
+    name: 'adaptavist/fw'
+    repo: 'ssh://git@stash.adaptavist.com:7999/pup/puppet-fw.git'
+    repo_type: 'tag'
+    ref_type: 'git'
+    ref_value: '0.1.2'
+
+haproxy: 
+    name: "example42/haproxy"
+    repo: 'git@github.com:Adaptavist/puppet-haproxy.git'
+    repo_type: 'tag'
+    ref_type: 'git'
+    ref_value: '2.0.6'
+
+postfix: 
+    name: "example42/postfix"
+    repo: 'git@github.com:Adaptavist/puppet-postfix.git'
+    repo_type: 'tag'
+    ref_type: 'git'
+    ref_value: '2.0.10'
+
+stdlib: 
+    name: "puppetlabs/stdlib"
+    repo: 'git@github.com:Adaptavist/puppet-stdlib.git'
+    repo_type: 'tag'
+    ref_type: 'git'
+    ref_value: '4.1.0'
+
+apache: 
+    name: "puppetlabs/apache"
+    repo: 'git@github.com:Adaptavist/puppet-apache.git'
+    repo_type: 'tag'
+    ref_type: 'git'
+    ref_value: '0.11.0'
+
+apt: 
+    name: "puppetlabs/apt"
+    repo: 'git@github.com:Adaptavist/puppet-apt.git'
+    repo_type: 'tag'
+    ref_type: 'git'
+    ref_value: '1.1.0'
+
+yum: 
+    name: "example42/yum"
+    repo: 'git@github.com:Adaptavist/puppet-yum.git'
+    repo_type: 'tag'
+    ref_type: 'git'
+    ref_value: 'v2.1.17'
+
+mysql: 
+    name: "puppetlabs/mysql"
+    repo: 'git@github.com:Adaptavist/puppet-mysql.git'
+    repo_type: 'tag'
+    ref_type: 'git'
+    ref_value: '2.1.0'
+
+xinetd: 
+    name: "puppetlabs/xinetd"
+    repo: 'git@github.com:Adaptavist/puppet-xinetd.git'
+    repo_type: 'tag'
+    ref_type: 'git'
+    ref_value: '1.3.1'
+
+postgresql: 
+    name: "puppetlabs/postgresql"
+    repo: 'git@github.com:Adaptavist/puppet-postgresql.git'
+    repo_type: 'tag'
+    ref_type: 'git'
+    ref_value: '3.3.3'
+
+noconfigpkgs: 
+    name: 'adaptavist/noconfigpkgs'
+    repo: 'ssh://git@stash.adaptavist.com:7999/pup/puppet-noconfigpkgs.git'
+    repo_type: 'tag'
+    ref_type: 'git'
+    ref_value: '0.1.2'
+
+etckeeper: 
+    name: 'puppet/etckeeper'
+    repo: 'ssh://git@stash.adaptavist.com:7999/pup/puppet-etckeeper.git'
+    repo_type: 'tag'
+    ref_type: 'git'
+    ref_value: '0.1.1'
+
+noconfigpkgs: 
+    name: 'adaptavist/noconfigpkgs'
+    repo: 'ssh://git@stash.adaptavist.com:7999/pup/puppet-noconfigpkgs.git'
+    repo_type: 'tag'
+    ref_type: 'git'
+    ref_value: '0.1.2'
+
+oracle_java: 
+    name: 'adaptavist/oracle_java'
+    repo: 'ssh://git@stash.adaptavist.com:7999/pup/puppet-oracle_java.git'
+    repo_type: 'tag'
+    ref_type: 'git'
+    ref_value: '0.2.2'
+
+packages_repos: 
+    name: 'adaptavist/packages_repos'
+    repo: 'ssh://git@stash.adaptavist.com:7999/pup/puppet-packages_repos.git'
+    repo_type: 'tag'
+    ref_type: 'git'
+    ref_value: '0.1.2'
+
+postgresconfig: 
+    name: 'adaptavist/postgresconfig'
+    repo: 'ssh://git@stash.adaptavist.com:7999/pup/puppet-postgresconfig.git'
+    repo_type: 'tag'
+    ref_type: 'git'
+    ref_value: '0.0.5'
+
+mysqlconfig: 
+    name: 'adaptavist/mysqlconfig'
+    repo: 'ssh://git@stash.adaptavist.com:7999/pup/puppet-mysqlconfig.git'
+    repo_type: 'tag'
+    ref_type: 'git'
+    ref_value: '0.1.2'
+
+baseusers: 
+    name: 'adaptavist/baseusers'
+    repo: 'ssh://git@stash.adaptavist.com:7999/pup/puppet-baseusers.git'
+    repo_type: 'tag'
+    ref_type: 'git'
+    ref_value: '0.1.2'
+
+avstapp: 
+    name: 'adaptavist/avstapp'
+    repo: 'ssh://git@stash.adaptavist.com:7999/pup/puppet-avstapp.git'
+    repo_type: 'tag'
+    ref_type: 'git'
+    ref_value: '0.1.2'
+
+database: 
+    name: 'adaptavist/database'
+    repo: 'ssh://git@stash.adaptavist.com:7999/pup/puppet-database.git'
+    repo_type: 'tag'
+    ref_type: 'git'
+    ref_value: '0.1.2'
+
+webserver: 
+    name: 'adaptavist/webserver'
+    repo: 'ssh://git@stash.adaptavist.com:7999/pup/puppet-webserver.git'
+    repo_type: 'tag'
+    ref_type: 'git'
+    ref_value: '0.2.3'
+
+limits: 
+    name: "puppetlabs/limits"
+    repo: 'git@github.com:Adaptavist/puppet-limits.git'
+    repo_type: 'tag'
+    ref_type: 'git'
+    ref_value: '0.0.2'
+
+concat: 
+    name: "puppetlabs/concat"
+    repo: 'git@github.com:Adaptavist/puppet-concat.git'
+    repo_type: 'tag'
+    ref_type: 'git'
+    ref_value: '1.1.2'
+
+puppi: 
+    name: "example42/puppi"
+    repo: 'git@github.com:Adaptavist/puppet-puppi.git'
+    repo_type: 'tag'
+    ref_type: 'git'
+    ref_value: '2.1.9'
+
+monitor: 
+    name: "example42/monitor"
+    repo: 'git@github.com:Adaptavist/puppet-monitor.git'
+    repo_type: 'tag'
+    ref_type: 'git'
+    ref_value: '2.0.1'
+
+iptables: 
+    name: "example42/iptables"
+    repo: 'git@github.com:Adaptavist/puppet-iptables.git'
+    repo_type: 'tag'
+    ref_type: 'git'
+    ref_value: '2.1.3'
+
+autofs: 
+    name: "example42/autofs"
+    repo: 'git@github.com:Adaptavist/puppet-autofs.git'
+    repo_type: 'tag'
+    ref_type: 'git'
+    ref_value: '2.0.13'
+
+sssd: 
+    name: 'adaptavist/sssd'
+    repo: 'ssh://git@stash.adaptavist.com:7999/pup/puppet-sssd.git'
+    repo_type: 'tag'
+    ref_type: 'git'
+    ref_value: '0.3.2'
+
+krb5: 
+    name: 'adaptavist/krb5'
+    repo: 'ssh://git@stash.adaptavist.com:7999/pup/puppet-krb5.git'
+    repo_type: 'tag'
+    ref_type: 'git'
+    ref_value: '0.1.2'
+
+samba: 
+    name: 'adaptavist/samba'
+    repo: 'ssh://git@stash.adaptavist.com:7999/pup/puppet-samba.git'
+    repo_type: 'tag'
+    ref_type: 'git'
+    ref_value: '0.1.2'
+
+active_directory_glue: 
+    name: 'adaptavist/active_directory_glue'
+    repo: 'ssh://git@stash.adaptavist.com:7999/pup/puppet-active_directory_glue.git'
+    repo_type: 'tag'
+    ref_type: 'git'
+    ref_value: '0.1.2'
+
+sudo: 
+    name: 'adaptavist/sudo'
+    repo: 'ssh://git@stash.adaptavist.com:7999/pup/puppet-sudo.git'
+    repo_type: 'tag'
+    ref_type: 'git'
+    ref_value: '0.1.2'
+
+nagiosclient: 
+    name: 'adaptavist/nagiosclient'
+    repo: 'ssh://git@stash.adaptavist.com:7999/pup/puppet-nagiosclient.git'
+    repo_type: 'tag'
+    ref_type: 'git'
+    ref_value: '0.1.2'
+
+simple_networking: 
+    name: 'adaptavist/simple_networking'
+    repo: 'ssh://git@stash.adaptavist.com:7999/pup/puppet-simple_networking.git'
+    repo_type: 'tag'
+    ref_type: 'git'
+    ref_value: '0.1.3'
+
+stunnel_config: 
+    name: 'adaptavist/stunnel_config'
+    repo: 'ssh://git@stash.adaptavist.com:7999/pup/puppet-stunnel_config.git'
+    repo_type: 'tag'
+    ref_type: 'git'
+    ref_value: '0.2.7'
+
+rsync_config: 
+    name: 'adaptavist/rsync_config'
+    repo: 'ssh://git@stash.adaptavist.com:7999/pup/puppet-rsync_config.git'
+    repo_type: 'tag'
+    ref_type: 'git'
+    ref_value: '0.1.2'
+
+lsyncd: 
+    name: 'adaptavist/lsyncd'
+    repo: 'ssh://git@stash.adaptavist.com:7999/pup/puppet-lsyncd.git'
+    repo_type: 'tag'
+    ref_type: 'git'
+    ref_value: '0.1.2'
+
+idmap: 
+    name: 'adaptavist/idmap'
+    repo: 'ssh://git@stash.adaptavist.com:7999/pup/puppet-idmap.git'
+    repo_type: 'tag'
+    ref_type: 'git'
+    ref_value: '0.1.2'
+
+kmod_config: 
+    name: 'adaptavist/kmod_config'
+    repo: 'ssh://git@stash.adaptavist.com:7999/pup/puppet-kmod_config.git'
+    repo_type: 'tag'
+    ref_type: 'git'
+    ref_value: '0.1.2'
+
+definer: 
+    name: 'adaptavist/definer'
+    repo: 'ssh://git@stash.adaptavist.com:7999/pup/puppet-definer.git'
+    repo_type: 'tag'
+    ref_type: 'git'
+    ref_value: '0.1.2'
+
+subversion_edge: 
+    name: 'adaptavist/subversion_edge'
+    repo: 'ssh://git@stash.adaptavist.com:7999/pup/puppet-subversion_edge.git'
+    repo_type: 'tag'
+    ref_type: 'git'
+    ref_value: '0.1.2'
+
+backup: 
+    name: 'adaptavist/backup'
+    repo: 'ssh://git@stash.adaptavist.com:7999/pup/puppet-backup.git'
+    repo_type: 'tag'
+    ref_type: 'git'
+    ref_value: '0.1.2'
+
+avst_backup: 
+    name: 'adaptavist/avst_backup'
+    repo: 'ssh://git@stash.adaptavist.com:7999/pup/puppet-avst_backup.git'
+    repo_type: 'tag'
+    ref_type: 'git'
+    ref_value: '0.1.5'
+
+openssh: 
+    name: "example42/openssh"
+    repo: 'git@github.com:Adaptavist/puppet-openssh.git'
+    repo_type: 'tag'
+    ref_type: 'git'
+    ref_value: '2.0.9'
+
+ntp: 
+    name: "puppetlabs/ntp"
+    repo: 'git@github.com:Adaptavist/puppet-ntp.git'
+    repo_type: 'tag'
+    ref_type: 'git'
+    ref_value: '3.1.0'
+
+stunnel: 
+    name: "puppetlabs/stunnel"
+    repo: 'git@github.com:Adaptavist/puppet-stunnel.git'
+    repo_type: 'tag'
+    ref_type: 'git'
+    ref_value: '0.0.1'
+
+rsync: 
+    name: "puppetlabs/rsync"
+    repo: 'git@github.com:Adaptavist/puppet-rsync.git'
+    repo_type: 'tag'
+    ref_type: 'git'
+    ref_value: '0.3.1'
+
+git: 
+    name: "puppetlabs/git"
+    repo: 'git@github.com:Adaptavist/puppet-git.git'
+    repo_type: 'tag'
+    ref_type: 'git'
+    ref_value: '0.3.0'
+
+kmod: 
+    name: "camptocamp/kmod"
+    repo: 'git@github.com:Adaptavist/puppet-kmod.git'
+    repo_type: 'tag'
+    ref_type: 'git'
+    ref_value: '0.1.3'
+

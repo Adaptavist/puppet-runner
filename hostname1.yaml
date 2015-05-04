@@ -12,7 +12,11 @@ classes:
 - avstapp
 - database
 dependencies:
-- mkhomedir
+- avstapp
+- stdlib
+- oracle_java
+- limits
+- packages_repos
 avstapp::conf:
   '%{::conf1_instance_name}':
     version: '%{::conf1_version}'
