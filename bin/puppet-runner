@@ -11,18 +11,19 @@ doc = <<DOCOPT
 Adaptavist puppet runner
 
 Usage:
-  puppet-runner (prepare|start|all) [-c CONFIG_DIR] [-t TEMPLATES] [-d DESTINATION_DIR] [-f FACTS_DEST] [-s SERVERNAME] [-p PUPPET_APPLY]
+  puppet-runner (prepare|start|all) [-c CONFIG_DIR] [-t TEMPLATES] [-d DESTINATION_DIR] [-f FACTS_DEST] [-s SERVERNAME] [-p PUPPET_APPLY] [-r PUPPETFILE_CONFIG] [-o PUPPETFILE_OUTPUT_PATH]
   puppet-runner -h | --help
 
 Options:
-  -h --help                                       Show this screen.
-  -s SERVERNAME --servername SERVERNAME           Custom identification of server, hostname fact if not provided
-  -c CONFIG_DIR --config_dir CONFIG_DIR           Hiera configuration directory, must ontain <hostname>.yaml and <hostname>_facts.yaml
-  -d DESTINATION_DIR --dest_dir DESTINATION_DIR   Directory for result hiera config.
-  -t TEMPLATES --templates TEMPLATES              Directory containing templates and defaults folder with functionality templates and default facts
-  -f FACTS_DEST --facts_dest_dir FACTS_DEST       Destination directory to store result facts
-  -p PUPPET_APPLY --puppet_apply PUPPET_APPLY     Custom puppet apply command to run
-
+  -h --help                                                                 Show this screen.
+  -s SERVERNAME --servername SERVERNAME                                     Custom identification of server, hostname fact if not provided
+  -c CONFIG_DIR --config_dir CONFIG_DIR                                     Hiera configuration directory, must ontain <hostname>.yaml and <hostname>_facts.yaml
+  -d DESTINATION_DIR --dest_dir DESTINATION_DIR                             Directory for result hiera config.
+  -t TEMPLATES --templates TEMPLATES                                        Directory containing templates and defaults folder with functionality templates and default facts
+  -f FACTS_DEST --facts_dest_dir FACTS_DEST                                 Destination directory to store result facts
+  -p PUPPET_APPLY --puppet_apply PUPPET_APPLY                               Custom puppet apply command to run
+  -r PUPPETFILE_CONFIG --puppetfile_config puppetfile_config                Puppetfile composition config file
+  -o PUPPETFILE_OUTPUT_PATH --puppetfile_output_path PUPPETFILE_OUTPUT_PATH Result Puppetfile path
 Commands:
   all           Runs the following commands prepare, start 
   start         Runs puppet apply 
@@ -90,16 +91,17 @@ if options['all'] || options['prepare']
     dest_dir = options["--dest_dir"] || options["-d"]
     facts_dest_dir = options["--facts_dest_dir"] || options["-f"]
     templates = options["--templates"] || options["-t"]
-
+    puppetfile_config_path = options["--puppetfile_config"] || options["-r"]
+    puppetfile_output_path = options["--puppetfile_output_path"] || options["-o"]
     hostname = options["--servername"] || options["-s"] || Facter.value("hostname")
     puts "Hostname #{hostname}"
-
 
     config_file_path = path_join_glob(input_dir, hostname+".yaml")
     templates_dir = path_join_glob(templates, "templates")
     def_facts_dir = path_join_glob(templates, "defaults")
+
     debug "Reading #{config_file_path}"
-    if File.file? config_file_path and File.directory? templates_dir and File.directory? def_facts_dir and File.directory? dest_dir and File.directory? facts_dest_dir
+    if File.file? config_file_path and File.directory? templates_dir and File.directory? def_facts_dir and File.directory? dest_dir and File.directory? facts_dest_dir and File.file? puppetfile_config_path
         config = YAML.load_file(config_file_path)
     else
         abort "Can not find config file #{config_file_path}. \
@@ -124,6 +126,8 @@ if options['all'] || options['prepare']
     result_default_facts = {}
     prefixed_required_facts = Set.new
     prefixed_facts_comments = {}
+    puppetfile_config = YAML.load_file(puppetfile_config_path) || {}
+    puppetfile_dependencies = []
       # functionalities:
       # # In honor of Henry... 
       #   1_app:
@@ -154,6 +158,9 @@ if options['all'] || options['prepare']
             default_facts = YAML.load_file(facts_to_add) || {}
             prefixes = data["prefixes"] || []
             required_facts = data["required_facts"] || []
+            puppetfile_parts = data["dependencies"] || []
+            # merge dependencies 
+            puppetfile_dependencies = puppetfile_dependencies | puppetfile_parts
 
             data_as_string = data.to_s
             facts_as_string = extract_value_from_hash(default_facts).to_s
@@ -227,6 +234,19 @@ if options['all'] || options['prepare']
         output_file.write(output_result_default_facts)
       end
       
+      File.open(puppetfile_output_path, 'w+') do |output_file|
+        header = "#!/usr/bin/env ruby\n---\n"
+        output_file.write(header)
+        puppetfile_dependencies.each do |pup|
+          dep = puppetfile_config[pup]
+
+          res = "mod \"#{dep['name']}\", \n" +
+           "  :#{dep['repo_type']} => '#{dep['repo']}',\n" +
+           "  :#{dep['ref_type']} => '#{dep['ref_value']}'\n\n"
+           output_file.write(res)
+        end
+      end
+
       nil_value_facts = result_default_facts.select{|key, val| val == nil}
 
       # Check that all required prefixed facts are present

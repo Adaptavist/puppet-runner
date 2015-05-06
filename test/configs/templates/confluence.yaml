@@ -10,6 +10,13 @@ required_facts:
 classes:
   - avstapp
 
+dependencies:
+  - avstapp
+  - stdlib
+  - oracle_java
+  - limits
+  - packages_repos
+
 avstapp::conf:
   "%{::confluence_instance_name}":
     version: "%{::confluence_version}" # '5.2.5'
