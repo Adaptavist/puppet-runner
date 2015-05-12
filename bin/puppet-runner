@@ -239,11 +239,14 @@ if options['all'] || options['prepare']
         output_file.write(header)
         puppetfile_dependencies.each do |pup|
           dep = puppetfile_config[pup]
-
-          res = "mod \"#{dep['name']}\", \n" +
-           "  :#{dep['repo_type']} => '#{dep['repo']}',\n" +
-           "  :#{dep['ref_type']} => '#{dep['ref_value']}'\n\n"
-           output_file.write(res)
+          if dep
+            res = "mod \"#{dep['name']}\", \n" +
+             "  :#{dep['repo_type']} => '#{dep['repo']}',\n" +
+             "  :#{dep['ref_type']} => '#{dep['ref_value']}'\n\n"
+             output_file.write(res)
+          else 
+            warning "Can not find configuration for module #{pup} in config of puppet modules!"
+          end
         end
       end
 
