@@ -286,7 +286,7 @@ avstapp:
     repo: 'ssh://git@stash.adaptavist.com:7999/pup/puppet-avstapp.git'
     ref_type: 'tag'
     repo_type: 'git'
-    ref_value: '0.1.2'
+    ref_value: '0.2.6'
 
 database: 
     name: 'adaptavist/database'
