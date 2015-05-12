@@ -68,15 +68,21 @@ logstash_forwarder_config:
     repo: 'ssh://git@stash.adaptavist.com:7999/pup/puppet-logstash_forwarder_config.git'
     ref_type: 'tag'
     repo_type: 'git'
-    ref_value: '0.1.0'
+    ref_value: '0.1.4'
 
-# # TODO: tag this commit with current tag
-logstash_forwarder: 
-    name: 'DanielRedOak/logstash_forwarder'
-    repo: 'git@github.com:Adaptavist/puppet-logstash_forwarder.git'
-    ref_type: "commit"
-    ref_value: "ee7c0390381"
+logstashforwarder: 
+    name: 'elasticsearch/logstashforwarder'
+    repo: 'git@github.com:Adaptavist/puppet-logstashforwarder.git'
+    ref_type: 'tag'
+    ref_value: "0.1.1"
     repo_type: 'git'
+
+logstash_config:
+    name: 'adaptavist/logstash_config'
+    repo: 'ssh://git@stash.adaptavist.com:7999/pup/puppet-logstash_config.git'
+    ref_type: 'tag'
+    repo_type: 'git'
+    ref_value: '0.1.1'
 
 logrotate: 
     name: "rodjek/logrotate"
@@ -91,13 +97,6 @@ grafana:
     ref_type: 'tag'
     ref_value: '0.2.2'
     repo_type: 'git'
-
-logstash_config:
-    name: 'adaptavist/logstash_config'
-    repo: 'ssh://git@stash.adaptavist.com:7999/pup/puppet-logstash_config.git'
-    ref_type: 'tag'
-    repo_type: 'git'
-    ref_value: '0.1.1'
 
 logstash: 
     name: "elasticsearch/logstash"
