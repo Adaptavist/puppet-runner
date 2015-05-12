@@ -97,7 +97,7 @@ logstash_config:
     repo: 'ssh://git@stash.adaptavist.com:7999/pup/puppet-logstash_config.git'
     ref_type: 'tag'
     repo_type: 'git'
-    ref_value: '0.1.0'
+    ref_value: '0.1.1'
 
 logstash: 
     name: "elasticsearch/logstash"
