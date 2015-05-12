@@ -64,11 +64,11 @@ ldap_ssh_keys:
     ref_value: '0.1.2'
 
 logstash_forwarder_config: 
-    name: 'adaptavist/ldap_ssh_keys'
+    name: 'adaptavist/logstash_forwarder_config'
     repo: 'ssh://git@stash.adaptavist.com:7999/pup/puppet-logstash_forwarder_config.git'
     ref_type: 'tag'
     repo_type: 'git'
-    ref_value: '0.1.2'
+    ref_value: '0.1.0'
 
 # # TODO: tag this commit with current tag
 logstash_forwarder: 
