@@ -235,7 +235,7 @@ if options['all'] || options['prepare']
       end
       
       File.open(puppetfile_output_path, 'w+') do |output_file|
-        header = "#!/usr/bin/env ruby\n---\n"
+        header = "#!/usr/bin/env ruby\n\n"
         output_file.write(header)
         puppetfile_dependencies.each do |pup|
           dep = puppetfile_config[pup]
