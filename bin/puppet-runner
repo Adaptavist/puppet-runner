@@ -274,6 +274,7 @@ if (options['start'] || options['all']) && !stop_apply
     puppet_command = "sudo su -c 'source /usr/local/rvm/scripts/rvm; puppet apply /etc/puppet/manifests/site.pp --confdir=/etc/puppet  --verbose --detailed-exitcodes'"
     to_execute = options["--puppet_apply"] || options["-p"] || puppet_command
     debug "Running #{to_execute}"
-    puts `#{to_execute}`
+    `#{to_execute}`
+    return $?.to_i
 end
 
