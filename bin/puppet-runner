@@ -275,6 +275,9 @@ if (options['start'] || options['all']) && !stop_apply
     to_execute = options["--puppet_apply"] || options["-p"] || puppet_command
     debug "Running #{to_execute}"
     `#{to_execute}`
-    return $?.to_i
+    exit_code = $?.exitstatus
+    if exit_code != 2
+      raise "execute_puppet exit status: #{exit_code}"
+    end
 end
 
