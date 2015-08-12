@@ -4,7 +4,7 @@ $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 
 Gem::Specification.new do |spec|
   spec.name          = "puppet-runner"
-  spec.version       = "0.0.8"
+  spec.version       = "0.0.9"
   spec.authors       = ["Martin Brehovsky"]
   spec.email         = ["mbrehovsky@adaptavist.com"]
   spec.summary       = %q{Preprocessor for hiera config}
@@ -22,5 +22,6 @@ Gem::Specification.new do |spec|
   spec.add_dependency "colorize", ">= 0.7.3"
   spec.add_dependency 'deep_merge'
   spec.add_dependency 'facter'
+  spec.add_dependency 'hiera-eyaml'
 end
 

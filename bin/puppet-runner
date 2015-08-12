@@ -113,14 +113,19 @@ if options['all'] || options['prepare']
 
     functionalities = config["functionalities"]
 
-    output_file_path = path_join_glob(dest_dir, "#{hostname}.yaml")
+    output_file_path = path_join_glob(dest_dir, "#{hostname}.eyaml")
+    output_encrypted_facts_file_path = "/tmp/#{hostname}_facts.eyaml"
     output_facts_file_path = path_join_glob(facts_dest_dir, "#{hostname}_facts.yaml")
     if File.file? output_file_path
       FileUtils.rm output_file_path
     end
+    if File.file? output_encrypted_facts_file_path
+      FileUtils.rm output_encrypted_facts_file_path 
+    end
     if File.file? output_facts_file_path
       FileUtils.rm output_facts_file_path
     end
+
     debug "Writing to #{output_file_path}"
     result_template = {}
     result_default_facts = {}
@@ -224,7 +229,7 @@ if options['all'] || options['prepare']
       end
       custom_facts_path = path_join_glob(input_dir, "#{hostname}_facts.yaml")
       custom_facts = YAML.load_file(custom_facts_path) || {}
-      File.open(output_facts_file_path, 'w+') do |output_file|
+      File.open(output_encrypted_facts_file_path, 'w+') do |output_file|
         output_result_default_facts = result_default_facts.deep_merge!(custom_facts, {:merge_hash_arrays => true}).to_yaml
         prefixed_facts_comments.each do |pattern, replacement|
           if replacement != nil
@@ -232,6 +237,21 @@ if options['all'] || options['prepare']
           end
         end
         output_file.write(output_result_default_facts)
+      end
+      
+      # decrypt facts file
+      require 'hiera/backend/eyaml/plugins'
+      require 'hiera/backend/eyaml/encryptors/pkcs7'
+      require 'hiera/backend/eyaml/subcommands/decrypt'
+      require 'hiera/backend/eyaml/options'
+      Hiera::Backend::Eyaml::Encryptors::Pkcs7.register
+      options = {
+          :eyaml=>output_encrypted_facts_file_path, 
+          :pkcs7_public_key =>'/etc/puppet/config/public_key.pkcs7.pem', 
+          :pkcs7_private_key=>'/etc/puppet/config/private_key.pkcs7.pem' }
+      Hiera::Backend::Eyaml::Options.set(Hiera::Backend::Eyaml::Subcommands::Decrypt.validate options)
+      File.open(output_facts_file_path, 'w') do |output_file|
+        output_file.write(Hiera::Backend::Eyaml::Subcommands::Decrypt.execute.gsub("DEC::PKCS7[", "").gsub("]!",""))
       end
       
       File.open(puppetfile_output_path, 'w+') do |output_file|
