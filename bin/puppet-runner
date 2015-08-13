@@ -11,7 +11,7 @@ doc = <<DOCOPT
 Adaptavist puppet runner
 
 Usage:
-  puppet-runner (prepare|start|all) [-c CONFIG_DIR] [-t TEMPLATES] [-d DESTINATION_DIR] [-f FACTS_DEST] [-s SERVERNAME] [-p PUPPET_APPLY] [-r PUPPETFILE_CONFIG] [-o PUPPETFILE_OUTPUT_PATH]
+  puppet-runner (prepare|start|all) [-c CONFIG_DIR] [-t TEMPLATES] [-d DESTINATION_DIR] [-f FACTS_DEST] [-s SERVERNAME] [-p PUPPET_APPLY] [-r PUPPETFILE_CONFIG] [-o PUPPETFILE_OUTPUT_PATH] [-e EYAML_KEY_PATH]
   puppet-runner -h | --help
 
 Options:
@@ -24,6 +24,7 @@ Options:
   -p PUPPET_APPLY --puppet_apply PUPPET_APPLY                               Custom puppet apply command to run
   -r PUPPETFILE_CONFIG --puppetfile_config puppetfile_config                Puppetfile composition config file
   -o PUPPETFILE_OUTPUT_PATH --puppetfile_output_path PUPPETFILE_OUTPUT_PATH Result Puppetfile path
+  -e EYAML_KEY_PATH --eyaml_key_path EYAML_KEY_PATH                         Path to eyaml encryption key pair
 Commands:
   all           Runs the following commands prepare, start 
   start         Runs puppet apply 
@@ -93,6 +94,7 @@ if options['all'] || options['prepare']
     templates = options["--templates"] || options["-t"]
     puppetfile_config_path = options["--puppetfile_config"] || options["-r"]
     puppetfile_output_path = options["--puppetfile_output_path"] || options["-o"]
+    eyaml_key_path = options["--eyaml_key_path"] || options["-e"] || "/etc/puppet/config"
     hostname = options["--servername"] || options["-s"] || Facter.value("hostname")
     puts "Hostname #{hostname}"
 
@@ -247,8 +249,8 @@ if options['all'] || options['prepare']
       Hiera::Backend::Eyaml::Encryptors::Pkcs7.register
       options = {
           :eyaml=>output_encrypted_facts_file_path, 
-          :pkcs7_public_key =>'/etc/puppet/config/public_key.pkcs7.pem', 
-          :pkcs7_private_key=>'/etc/puppet/config/private_key.pkcs7.pem' }
+          :pkcs7_public_key =>"#{eyaml_key_path}/public_key.pkcs7.pem",
+          :pkcs7_private_key=>"#{eyaml_key_path}/private_key.pkcs7.pem" }
       Hiera::Backend::Eyaml::Options.set(Hiera::Backend::Eyaml::Subcommands::Decrypt.validate options)
       File.open(output_facts_file_path, 'w') do |output_file|
         output_file.write(Hiera::Backend::Eyaml::Subcommands::Decrypt.execute.gsub("DEC::PKCS7[", "").gsub("]!",""))

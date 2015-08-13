@@ -8,11 +8,16 @@ Executable gem that composes hiera configuration and facts and execute puppet ap
 
 ## Usage
 
-*  puppet-runner (prepare|start|all) [-c CONFIG_DIR] [-t TEMPLATES] [-d DESTINATION_DIR] [-f FACTS_DEST] [-s SERVERNAME] [-r PUPPETFILE_CONFIG] [-o PUPPETFILE_OUTPUT_PATH]
+*  puppet-runner (prepare|start|all) [-c CONFIG_DIR] [-t TEMPLATES] [-d DESTINATION_DIR] [-f FACTS_DEST] [-s SERVERNAME] [-r PUPPETFILE_CONFIG] [-o PUPPETFILE_OUTPUT_PATH] [-e EYAML_KEY_PATH]
 *  puppet-runner -h | --help
 
 
 ### Config files description and usage
+
+Eyaml files can also be used. Use the -e option to specify the directory that contains your eyaml encryption key pair,
+the default if no directory is specified is /etc/puppet/config  
+Eyaml expects the files to be called public_key.pkcs7.pem and private_key.pkcs7.pem
+
 
 #### CONFIG_DIR
 
@@ -147,6 +152,8 @@ Path to output Puppetfile.
 *  -f FACTS_DEST --facts_dest_dir FACTS_DEST       Destination directory to store result facts
 *  -r PUPPETFILE_CONFIG --puppetfile_config puppetfile_config                Puppetfile composition config file
 *  -o PUPPETFILE_OUTPUT_PATH --puppetfile_output_path PUPPETFILE_OUTPUT_PATH Result Puppetfile path
+*  -e EYAML_KEY_PATH --eyaml_key_pair EYAML_KEY_PATH                         Path to eyaml encryption key pair
+
 Commands:
 
 *  all           Runs the following commands prepare, start 
