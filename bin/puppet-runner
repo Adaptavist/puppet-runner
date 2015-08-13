@@ -242,7 +242,7 @@ if options['all'] || options['prepare']
         output_file.write(output_result_default_facts)
       end
       
-      # decrypt facts file
+      # decrypt facts file because Puppet doesn't appear to be able to read encrypted facts
       require 'hiera/backend/eyaml/plugins'
       require 'hiera/backend/eyaml/encryptors/pkcs7'
       require 'hiera/backend/eyaml/subcommands/decrypt'
@@ -253,8 +253,36 @@ if options['all'] || options['prepare']
           :pkcs7_public_key =>"#{eyaml_key_path}/public_key.pkcs7.pem",
           :pkcs7_private_key=>"#{eyaml_key_path}/private_key.pkcs7.pem" }
       Hiera::Backend::Eyaml::Options.set(Hiera::Backend::Eyaml::Subcommands::Decrypt.validate options)
+
+      # manually ensure multi-line encrypted values are output correctly into the new decrypted yaml file
+      # this is just modifed source from http://www.rubydoc.info/gems/hiera-eyaml/2.0.8/Hiera%2FBackend%2FEyaml%2FSubcommands%2FDecrypt.execute
       File.open(output_facts_file_path, 'w') do |output_file|
-        output_file.write(Hiera::Backend::Eyaml::Subcommands::Decrypt.execute.gsub("DEC::PKCS7[", "").gsub("]!",""))
+        parser = Hiera::Backend::Eyaml::Parser::ParserFactory.encrypted_parser
+        tokens = parser.parse(Hiera::Backend::Eyaml::Options[:input_data])
+        case Hiera::Backend::Eyaml::Options[:source]
+          when :eyaml
+            decrypted = tokens.map{ |token|
+              decrypted_value = token.to_decrypted
+              encryption_indicator = 'DEC::PKCS7['
+              four_spaces = '    '
+              multiline_value = if decrypted_value.include? encryption_indicator and decrypted_value.include? "\n" then
+                                  "|\n#{four_spaces}" + decrypted_value.gsub("\n", "\n#{four_spaces}")
+                                else
+                                  decrypted_value
+                                end
+              multiline_value.gsub(encryption_indicator, '').gsub(']!', '')
+            }
+          else
+            decrypted = tokens.map{ |token|
+              case token.class.name
+                when /::EncToken$/
+                  token.plain_text
+                else
+                  token.match
+              end
+            }
+        end
+        output_file.write(decrypted.join)
       end
       
       File.open(puppetfile_output_path, 'w+') do |output_file|
