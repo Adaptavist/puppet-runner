@@ -8,7 +8,8 @@ Executable gem that composes hiera configuration and facts and execute puppet ap
 
 ## Usage
 
-*  puppet-runner (prepare|start|all) [-c CONFIG_DIR] [-t TEMPLATES] [-d DESTINATION_DIR] [-f FACTS_DEST] [-s SERVERNAME] [-r PUPPETFILE_CONFIG] [-o PUPPETFILE_OUTPUT_PATH] [-e EYAML_KEY_PATH]
+*  puppet-runner (prepare|all) [-c CONFIG_DIR] [-t TEMPLATES] [-d DESTINATION_DIR] [-f FACTS_DEST] [-s SERVERNAME] [-r PUPPETFILE_CONFIG] [-o PUPPETFILE_OUTPUT_PATH] [-e EYAML_KEY_PATH]
+*  puppet-runner start [-p PUPPET_APPLY]
 *  puppet-runner -h | --help
 
 
@@ -153,6 +154,7 @@ Path to output Puppetfile.
 *  -r PUPPETFILE_CONFIG --puppetfile_config puppetfile_config                Puppetfile composition config file
 *  -o PUPPETFILE_OUTPUT_PATH --puppetfile_output_path PUPPETFILE_OUTPUT_PATH Result Puppetfile path
 *  -e EYAML_KEY_PATH --eyaml_key_pair EYAML_KEY_PATH                         Path to eyaml encryption key pair
+*  -p PUPPET_APPLY --puppet_apply PUPPET_APPLY                               Custom puppet apply command to run
 
 Commands:
 
