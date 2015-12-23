@@ -162,3 +162,14 @@ Commands:
 *  start         Runs puppet apply 
 *  prepare       Creates result hiera config as a composition of functionalities based on config, merges provided facts with defaults
 
+## License
+
+puppet-runner is released under the terms of the Apache 2.0 license. See LICENSE.txt
+
+## Contributing
+
+1. Fork it ( https://github.com/adaptavist/puppet-runner/fork )
+2. Create your feature branch (`git checkout -b my-new-feature`)
+3. Commit your changes (`git commit -am 'Add some feature'`)
+4. Push to the branch (`git push origin my-new-feature`)
+5. Create a new Pull Request
