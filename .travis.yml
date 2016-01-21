@@ -1,0 +1,18 @@
+language: ruby
+notifications:
+  email: false
+  hipchat:
+    rooms:
+      secure: mg8p8P5BEEMtwmZ56tVHKN92Ougto/XXXQ9tG0UVyH5hitP0mA94puJSrylotvsgLnyqYWzniT42Rp+PL6ITRCT7U+1NoLLUUOCYNcuvl78kUkefdFy3c3FhEP1mYqiemmwNw/eSguhj60CVAuwqlxV9gX8otI9mhpCEdiKH10KL5HIlVfwUsaSoM6ay7Uo+J18ZJbJPC6Uiwx/rTv774LrpeGSjfcgZ7G7mOaPQ/2ifYNpk/6a49RlLt1Gwx5yM6/8/DWKh2dHzVzmFvvEbAVpiqo5z4I/7dQZcH48CDylpyqIPZhKt8cus2N/tEmhPxiDMvVpfeehIjcwVP6kGGmnKHO2ofXJ7ZbmmTo8LJAxFoqsnpd8HofTUab9EhkI9HxS5YYTOQRCCd3XbTlci1HN8zZ+WtyGfxiEmoFkbsdh5OEYkfwfxKX05fSNh26NsXdY6TF0iV/5Djv0X8b7e9JlqKfeCOXa4qkZOy1pZbC+r89bIAqysmLIMH271Rfcs7hV3/xQQvKgSQ3OJQ5L+W41AMwFIzRpppKTDeazwxtYfBBhVXk6FNPCDt8TR4x4QSOX5NgQPbEdfVry5H4pkLSrdJhoO+WAKVa47zRDbnwbIJR96of1H+o9zxdH4+FdAENxczJBrTjJovlC01r2iX78ejaR6FpTq9Ulw7bN3CPo=
+    template:
+    - 'Gem - %{repository} #%{build_number} (%{build_url}) by %{author}: %{message}'
+rvm:
+- 2.0.0
+deploy:
+  provider: rubygems
+  api_key:
+    secure: g7fs2n7FvaqHc5n3HPuzBvfbj4tsdXkxqB0rzYQSrlSgjIJBQpY6xpj3q71//2kzJYKDeytfqI+88Z9lEjIssEF9QVf5n4ZD3dRKy21auY3v59n7Y+ri6LRQDkxdF9eXf+UQ+RbOehAgnLMhPac9ZcDmcrQtkCZJdfv297RQHUDBQkpIynJw9kt5nuu6wNTKgnRxgeCETOxw7/IBGhtvqzf+Ial3F6eSF3USIiwCrpPYvYeNDypKPcQEFw/1KDny0KzimV88lOY3mGwqcnwGy4ccPMi8R5iHO7On0wJyASi15Yj6aQ6cDUn3krrPrY8kwCyp/+53+VlO3oA1Gya3h4nizWbKWBUqQxvbWJ1UjYsWMLPC1enVXTyb7vUBdJ1F0amGGobBYvyI1LRZW4TR//VX9jiwcnay2MO4xcuOU7Op1gtXlg0+BQZe8NN5b6IPqq5DCg5p7+0CvqvveAsEmbhxXDAIggkZwMqJ9LpCpt/7Rl2kcvNK0Zhd4Ur2kk02yPSi4s/EFM2qF+5ytdFwgjPpGUK1LZ1k2h3KR897+t22mfQAOmEshh2eWuPpEEIfv9HwwIG50zaH9sYBMEQPipyA6e8+Ke/8fq9JbCIfUl3sUcDUNC7fwpq3easQYOCzmqGiFTNiSJGlMH/vEejQfq8qtMCvMaaIKijs9m0cBmE=
+  gem: puppet-runner
+  on:
+    tags: true
+    repo: Adaptavist/puppet-runner
