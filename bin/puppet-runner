@@ -251,7 +251,7 @@ if options['all'] || options['prepare']
         output_result_default_facts = result_default_facts.deep_merge!(custom_facts, {:merge_hash_arrays => true}).to_yaml
         prefixed_facts_comments.each do |pattern, replacement|
           if replacement != nil
-            output_result_default_facts.gsub!(/^#{pattern}.*$/, "\##{replacement}\n#{pattern}")
+            output_result_default_facts.gsub!(/^#{pattern}/, "\##{replacement}\n#{pattern}")
           end
         end
         output_file.write(output_result_default_facts)
