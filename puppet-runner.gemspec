@@ -4,8 +4,8 @@ $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 
 Gem::Specification.new do |spec|
   spec.name          = "puppet-runner"
-  spec.version       = "0.0.17"
-  spec.authors       = ["Martin Brehovsky"]
+  spec.version       = "0.0.18"
+  spec.authors       = ["Martin Brehovsky", "Matthew Hope"]
   spec.email         = ["mbrehovsky@adaptavist.com"]
   spec.summary       = %q{Preprocessor for hiera config}
   spec.description   = %q{Loads user config and created result hiera config and executes puppet apply with it.}
