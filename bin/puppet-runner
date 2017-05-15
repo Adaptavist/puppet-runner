@@ -119,12 +119,13 @@ if options['all'] || options['prepare']
     def_facts_dir = path_join_glob(templates, "defaults")
 
     debug "Reading #{config_file_path}"  
-    abort "Could not find #{config_file_path}".red if ! File.file? config_file_path 
-    abort "Could not find #{templates_dir}".red if ! File.directory? templates_dir 
-    abort "Could not find #{def_facts_dir}".red if ! File.directory? def_facts_dir 
-    abort "Could not find #{dest_dir}".red if ! File.directory? dest_dir 
-    abort "Could not find #{facts_dest_dir}".red if ! File.directory? facts_dest_dir
-    abort "Could not find #{puppetfile_config_path}".red if ! File.file? puppetfile_config_path
+    abort "Could not find #{config_file_path}".red if !File.file? config_file_path 
+    abort "Could not find #{templates_dir}".red if !File.directory? templates_dir 
+    abort "Could not find #{def_facts_dir}".red if !File.directory? def_facts_dir 
+    abort "Could not find #{dest_dir}".red if !File.directory? dest_dir 
+    abort "Could not find #{facts_dest_dir}".red if !File.directory? facts_dest_dir
+    abort "Could not find #{puppetfile_config_path}".red if !File.file? puppetfile_config_path
+
     config = YAML.load_file(config_file_path)
 
     functionalities = config["functionalities"]
