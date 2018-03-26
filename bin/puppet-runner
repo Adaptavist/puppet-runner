@@ -375,7 +375,14 @@ if options['all'] || options['prepare']
         end
         output_file.write(decrypted.join)
       end
+
+      begin
+        FileUtils.rm output_encrypted_facts_file_path
+      rescue
+        warning "Unable to remove tmp encrypted facts file #{output_encrypted_facts_file_path}"
+      end
       
+      # create puppetfile from the dictionary
       File.open(puppetfile_output_path, 'w+') do |output_file|
         header = "#!/usr/bin/env ruby\n\n"
         output_file.write(header)
