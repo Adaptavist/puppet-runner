@@ -210,19 +210,12 @@ if options['all'] || options['prepare']
             data_type = extract_type_from_hash(default_facts)
 
             # Check to see if any of the fields are booleans, if so add an entry to the transform_data array
-            # each entry is a hash of "puppet variable" => "fact name"
             transform_data = []
             data_type.each do | field|
               field.each do | field_name, field_type |
-              # if the field is a boolean, loop through all the template data until we find the data
-              # value (fact name) that matches this field, this is how we find the data key (puppet field)
-              if field_type == 'boolean'
-                data.each do | data_field, data_value |
-                  if data_value == "%{::#{field_name}}"
-                    transform_data << {data_field => field_name}
-                  end
+                if field_type == 'boolean'
+                  transform_data << field_name
                 end
-              end
               end
             end
 
@@ -245,12 +238,7 @@ if options['all'] || options['prepare']
                         facts_as_string = facts_as_string.gsub(/#{prefix}/, "#{replace_prefixes_with}")
                         fact_comments_as_string = fact_comments_as_string.gsub(/#{prefix}/, "#{replace_prefixes_with}")
                         prefixed_required_facts = prefixed_required_facts.merge(required_facts.map! { |item| item.gsub(/#{prefix}/, "#{replace_prefixes_with}") })
-                        # loop through all the transformations and do prefix substitution
-                        if !transform_data.empty?
-                          transform.each do|key, value|
-                            transform[key] = value.sub(/#{prefix}/, "#{replace_prefixes_with}")
-                          end
-                        end
+                        transform_data = transform_data.map {|s| s.gsub(/#{prefix}/, "#{replace_prefixes_with}")} if !transform_data.empty?
                       end
                     end
                   end
@@ -263,14 +251,7 @@ if options['all'] || options['prepare']
                     facts_as_string = facts_as_string.gsub(/#{prefix}/, "#{replace_prefixes_with}")
                     fact_comments_as_string = fact_comments_as_string.gsub(/#{prefix}/, "#{replace_prefixes_with}")
                     prefixed_required_facts = prefixed_required_facts.merge(required_facts.map! { |item| item.gsub(/#{prefix}/, "#{replace_prefixes_with}") })
-                    # loop through all the transformations and do prefix substitution
-                    if !transform_data.empty?
-                      transform_data.each do | transform |
-                        transform.each do|key, value|
-                          transform[key] = value.sub(/#{prefix}/, "#{replace_prefixes_with}")
-                        end
-                      end
-                    end
+                    transform_data = transform_data.map {|s| s.gsub(/#{prefix}/, "#{replace_prefixes_with}")} if !transform_data.empty?
                   end
                 end
               end
@@ -278,11 +259,7 @@ if options['all'] || options['prepare']
               default_facts_prefixed = eval (facts_as_string)
               default_fact_comments = eval (fact_comments_as_string)
             else
-              if transform_data 
-                template = eval (data_as_string)
-              else
-                template = YAML.load_file(template_to_add)
-              end
+              template = YAML.load_file(template_to_add)
               plain_facts = YAML.load_file(facts_to_add)
               default_facts_prefixed = extract_value_from_hash(plain_facts)
               default_fact_comments = extract_comment_from_hash(plain_facts)  
@@ -315,14 +292,13 @@ if options['all'] || options['prepare']
         # global transformations are currently just booleans that need to be expressed directly in output file
         if !global_transform_data.empty?
           all_facts = YAML.load(output_result_default_facts)
-          global_transform_data.each do | transform_hash |
-            transform_hash.each do | transform_key, transform_value |
-                debug "Attempting to replace boolean value for key #{transform_key} and fact #{transform_value}"
-                begin
-                  result_template[transform_key] = all_facts[transform_value].to_bool
-                rescue
-                  warning "Unable to convert fact #{transform_value} with value #{all_facts[transform_value]} into boolean, conversion will be skipped"
-                end
+          global_transform_data.each do | transform_value |
+            debug "Attempting to replace boolean value for fact #{transform_value}"
+            begin
+              # convert the fact to boolean and then back to string, this allows validation that the fact is actually a bgoolean and not just a randon string
+              result_template = eval(result_template.to_s.gsub(/\"\%{::#{transform_value}}\"/, all_facts[transform_value].to_bool.to_s))
+            rescue
+              warning "Unable to convert fact #{transform_value} with value #{all_facts[transform_value]} into boolean, conversion will be skipped"
             end
           end
         end
