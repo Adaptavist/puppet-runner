@@ -27,7 +27,7 @@ doc = <<DOCOPT
 Adaptavist puppet runner
 
 Usage:
-  puppet-runner (prepare|all) [-c CONFIG_DIR] [-t TEMPLATES] [-d DESTINATION_DIR] [-f FACTS_DEST] [-s SERVERNAME] [-p PUPPET_APPLY] [-r PUPPETFILE_CONFIG] [-o PUPPETFILE_OUTPUT_PATH] [-e EYAML_KEY_PATH]
+  puppet-runner (prepare|all) [-c CONFIG_DIR] [-t TEMPLATES] [-d DESTINATION_DIR] [-f FACTS_DEST] [-s SERVERNAME] [-p PUPPET_APPLY] [-r PUPPETFILE_CONFIG] [-o PUPPETFILE_OUTPUT_PATH] [-e EYAML_KEY_PATH] [-k]
   puppet-runner start [-p PUPPET_APPLY]
   puppet-runner -h | --help
 
@@ -42,6 +42,7 @@ Options:
   -r PUPPETFILE_CONFIG --puppetfile_config puppetfile_config                Puppetfile composition config file
   -o PUPPETFILE_OUTPUT_PATH --puppetfile_output_path PUPPETFILE_OUTPUT_PATH Result Puppetfile path
   -e EYAML_KEY_PATH --eyaml_key_path EYAML_KEY_PATH                         Path to eyaml encryption key pair
+  -k --keep-facts                                                           Flag to keep the encrypted facts file in /tmp for analysis
 Commands:
   all           Runs the following commands prepare, start 
   start         Runs puppet apply 
@@ -119,6 +120,7 @@ rescue Docopt::Exit => e
 end
 
 stop_apply = false
+keep_facts = false
 
 if options['all'] || options['prepare']
     input_dir = options["--config_dir"] || options["-c"] 
@@ -130,6 +132,7 @@ if options['all'] || options['prepare']
     eyaml_key_path = options["--eyaml_key_path"] || options["-e"] || "/etc/puppet/config"
     hostname = options["--servername"] || options["-s"] || Facter.value("hostname")
     puts "Hostname #{hostname}"
+    keep_facts = true if options["-k"] or options["--keep-facts"]
 
     config_file_path = path_join_glob(input_dir, hostname+".yaml")
     templates_dir = path_join_glob(templates, "templates")
@@ -278,6 +281,10 @@ if options['all'] || options['prepare']
       end
       custom_facts_path = path_join_glob(input_dir, "#{hostname}_facts.yaml")
       custom_facts = YAML.load_file(custom_facts_path) || {}
+
+      # add a fact for the localtion of facter
+      custom_facts['facter_file_location'] = output_facts_file_path
+
       File.open(output_encrypted_facts_file_path, 'w+') do |output_file|
         output_result_default_facts = result_default_facts.deep_merge!(custom_facts, {:merge_hash_arrays => true}).to_yaml
         prefixed_facts_comments.each do |pattern, replacement|
@@ -285,6 +292,7 @@ if options['all'] || options['prepare']
             output_result_default_facts.gsub!(/^#{pattern}/, "\##{replacement}\n#{pattern}")
           end
         end
+
         output_file.write(output_result_default_facts)
 
         # now that the merged final facts are present look for any global transformations to apply 
@@ -351,13 +359,20 @@ if options['all'] || options['prepare']
               end
             }
         end
+
         output_file.write(decrypted.join)
       end
 
-      begin
-        FileUtils.rm output_encrypted_facts_file_path
-      rescue
-        warning "Unable to remove tmp encrypted facts file #{output_encrypted_facts_file_path}"
+      # unless asked not to, attempt to remove the encrypted facts file
+      if keep_facts
+        debug "Removal of tmp encrypted facts file #{output_encrypted_facts_file_path} skipped at users request"
+      else
+        debug "Attempting to remove tmp encrypted facts file #{output_encrypted_facts_file_path}"
+        begin
+          FileUtils.rm output_encrypted_facts_file_path
+        rescue
+          warning "Unable to remove tmp encrypted facts file #{output_encrypted_facts_file_path}"
+        end
       end
       
       # create puppetfile from the dictionary
@@ -396,7 +411,7 @@ if options['all'] || options['prepare']
 end
 
 
-# start puppet 
+# start puppet
 if (options['start'] || options['all']) && !stop_apply
     require 'puppet'
     modulefile_definition = Gem::Version.new(Puppet.version) > Gem::Version.new('4.0.0') ? '--modulepath /etc/puppet/modules' : ''
@@ -405,9 +420,23 @@ if (options['start'] || options['all']) && !stop_apply
     debug "Running #{to_execute}"
     `#{to_execute}`
     exit_code = $?.exitstatus
+
+    # attempt to remove the fact file as its unencrypted (we do not care about exit status)
+    fact_file_location = Facter.value("facter_file_location")
+    if fact_file_location 
+      if File.file?(fact_file_location)
+        debug "Attempting to remove fact file #{fact_file_location}"
+        begin
+          FileUtils.rm fact_file_location
+        rescue
+          warning "Unable to remove facts file #{fact_file_location}.\nPlease urgently remove this as it holds unencrypted values"
+        end
+      end
+    else
+      warning "Unable to locate Facts file, please urgently locate and remove this as it holds unencrypted values"
+    end
+
     if exit_code != 2
       raise "execute_puppet exit status: #{exit_code}"
     end
 end
-
-
