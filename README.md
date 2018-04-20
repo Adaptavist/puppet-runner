@@ -101,6 +101,271 @@ With this setup we define prefix -> substitution_string pair for each prefix in 
 
 "hostname"_facts.yaml - must contain all prefixed custom facts to customize the setup 
 
+### Fact Metadata
+
+The defaults file contains all the facts (variables) that are needed to run the tempalte, the basic format of this is:
+```
+fact_name: 'fact_value'
+```
+
+So in this instance fact_name will have a default value of fact_value, which can be overiden by the user in their own facts file.
+
+However it is also possible to add metadata to the facts by changing the format, the current metadata is `comment` and `type`, this extened format looks like:
+
+```
+fact_name:
+    value: 'fact_value'
+    comment: 'this is an important fact'
+    type: 'string'
+```
+
+The two metadata values are:
+`comment` - This is a description for the fact to help identify what it is for, it is added above the fact in the reultant facts files written by puppet-runner
+`type` - This identifies the data type of the fact, by default if this meatadata is not set the value defaults to `string`, current valid types are:
+**string**
+**boolean**
+**nilable**
+
+### Fact Types
+
+As mentioned above it is possible to assign a "type" metadata element to each fact, the reasons is that facter delivers all its data as a string, this can cause issues so the "type" metadata allows puppet-runner to do something special for other data typs:
+
+#### string
+
+All data is passed by default as a string, setting the type to string does not do anythign special
+
+#### boolean
+
+If the type is set to boolean this tells puppet-runner that we want to pass in true boolean values, a conversion from the string value into true boolean is attempted.  If the conversions is successfull the fact reference in the final compiled hiera document (/etc/puppet/hiera/<HOSTNAME>.eyaml) would be replaced with the actual boolean value so that puppet does not recive its string representation.
+
+Example:
+
+Template
+```
+---
+  
+prefixes:
+    - yum_
+
+classes:
+    - yum
+
+dependencies:
+  - yum
+  - puppi
+
+yum::defaultrepo: "%{::yum_defaultrepo}"
+```
+
+If the defaults does not use metadata (or uses a type of string) and the facts are set as below
+```
+---
+  
+yum_defaultrepo: "true"
+```
+
+Then the value writen into /etc/puppet/hiera/<HOSTNAME>.eyaml would be 
+
+```
+yum::defaultrepo: "%{::yum_defaultrepo}"
+```
+
+Whereas if the default was set to boolean as below:
+```
+---
+  
+yum_defaultrepo: 
+  value: "true"
+  type: "boolean"
+```
+
+Then the value writen into /etc/puppet/hiera/<HOSTNAME>.eyaml would be 
+
+```
+yum::defaultrepo: true
+```
+
+#### nilable
+
+If the type is set to nilable this tells puppet-runner that we want to pass in a nil/undef (null) value instead of an empty string, if the fact value is blank '' it will be converted into a tilda (~) as this is the nil representation  in hiera.  If the conversions is successfull the fact reference in the final compiled hiera document (/etc/puppet/hiera/<HOSTNAME>.eyaml) would be replaced with a tilda.  Please note this only works for puppet variables that are defaulted in the code to undef, if they have a value passing nil to them will result in the code default still being set
+
+Example:
+
+Template
+```
+---
+classes:
+  - artifactory
+
+
+artifactory::conf:
+    tarball_location_file: "%{::artifactory_file_location}"
+    tarball_location_url:  "%{::artifactory_url_location}"
+    .........
+```
+
+If the defaults does not use metadata (or uses a type of string) and the facts are set as below
+```
+---
+  
+artifactory_file_location: '/tmp/file.zip'
+artifactory_url_location: 
+```
+
+They are therefore both mandatory fileds and puppet-runner will ask for you to give a value for both, however in reality these are mutually exclusive, one will take precident over the other so passing them both could have unforseen consequences.
+
+The other otpion is to set the facts to be empty string, however this still passed an empty string into puppet which, unless the code has been written to discount that, could still cause issues:
+```
+artifactory_file_location: '/tmp/file.zip'
+artifactory_url_location: ''
+```
+
+Then the value writen into /etc/puppet/hiera/<HOSTNAME>.eyaml would be 
+
+```
+artifactory::conf:
+    tarball_location_file: "%{::artifactory_file_location}"
+    tarball_location_url:  "%{::artifactory_url_location}"
+```
+
+Whereas if the metadata type was set to nilable and a value of '' (empty string is supplied)  in the defaults
+```
+---
+  
+artifactory_file_location:
+  value: ''
+  comment: 'blah'
+  type: 'nilable'
+artifactory_url_location: 
+  value: ''
+  comment: 'other blah'
+  type: 'nilable'
+```
+
+And the facts were set with a value for one and empty string for the other as below:
+```
+artifactory_file_location: '/tmp/file.zip'
+artifactory_url_location: ''
+```
+
+Then the value writen into /etc/puppet/hiera/<HOSTNAME>.eyaml would be 
+
+```
+artifactory::conf:
+    tarball_location_file: "%{::artifactory_file_location}"
+    tarball_location_url:  ~
+```
+
+### Inter fact references
+
+There are a number of occasions where you may want one fact to point to the value of another, either because you want it to be exactly the same or you want your fact to be a superset of the other, puppet-runner will evaluate facts that reference another fact and present the last fact reference to puppet, the resolution will recursivly resolve facts down to their base fact to a max depth of 5, after which it will stop in order to prevent infinite loops, this will cause a failure of the fact lookup.
+
+#### Example 1: Fact directly referneces another fact
+
+In this example we want our fact to reference another, in this example we will point a custom fact at a system fact (although you can point it at any fact, system or custom)
+
+**template:**
+````
+---
+  
+prefixes:
+  - vpn_snat_
+
+classes:
+  - fw
+
+dependencies:
+  - fw
+  - firewall
+  - stdlib
+
+fw::rules: &fw_rules
+  "%{::vpn_snat_description}":
+      chain: "%{::vpn_snat_chain}"
+      tosource: "%{::vpn_snat_tosource}"
+      jump: "%{::vpn_snat_jump}"
+      source: "%{::vpn_snat_source}"
+      table: "%{::vpn_snat_table}"
+      proto: "%{::vpn_snat_proto}"
+````
+
+We want the `tosource` value to be set with the IP address for the servers eth0 adapter, there is already a system fact for this `ipaddress_eth0` 
+
+We set the facts as below:
+
+````
+vpn_snat_description: '000 VPN SNAT Configuration'
+vpn_snat_chain: 'POSTROUTING'
+vpn_snat_tosource: "%{::ipaddress_eth0}"
+vpn_snat_jump: 'SNAT'
+vpn_snat_source: '172.28.254.0/23'
+vpn_snat_table: 'nat'
+vpn_snat_proto: 'all'
+````
+
+Pupet-runner will resolve the `vpn_snat_tosource` faqt down to the first fact it references, which is `ipaddress_eth0`, as a result the value writen into /etc/puppet/hiera/<HOSTNAME>.eyaml would be 
+
+````
+fw::rules: &fw_rules
+  "%{::vpn_snat_description}":
+      chain: "%{::vpn_snat_chain}"
+      tosource: "%{::ipaddress_eth0}"
+      jump: "%{::vpn_snat_jump}"
+      source: "%{::vpn_snat_source}"
+      table: "%{::vpn_snat_table}"
+      proto: "%{::vpn_snat_proto}"
+````
+
+#### Example 2: Fact includes another fact as part of its value
+
+In this example we want our fact to be a superset of another fact.
+
+**template:**
+````
+---
+
+prefixes:
+  - tripwire_
+
+classes:
+  - tripwire
+
+dependencies:
+  - tripwire
+  - stdlib
+  - concat
+
+tripwire::local_passphrase: '%{::tripwire_local_passphrase}'
+tripwire::site_passphrase: '%{::tripwire_site_passphrase}'
+tripwire::tripwire_email: '%{::tripwire_tripwire_email}'
+tripwire::tripwire_policy_file: '%{::tripwire_tripwire_policy_file}'
+````
+
+We want the `site_passphrase` value to be the same as `local_passphrase` but with _LOCAL at the end
+
+We set the facts as below:
+
+````
+tripwire_global_passphrase: 'super_secret'
+tripwire_local_passphrase: "%{::tripwire_site_passphrase}_LOCAL"
+tripwire_site_passphrase: "%{::tripwire_global_passphrase}
+tripwire_tripwire_email: 'blackhole'
+tripwire_tripwire_policy_file: 'false'
+````
+ 
+Note here we have added a custom fact that is not references in any template or default, this will still be avaliable via facter in the normal way.
+
+The fact `tripwire_site_passphrase` will resolve down to `tripwire_global_passphrase` as in the previous example, however the fact `tripwire_local_passphrase` will be resolved twice (once to `tripwire_site_passphrase` and then again down to `tripwire_global_passphrase`)
+
+As a result the value writen into /etc/puppet/hiera/<HOSTNAME>.eyaml would be 
+
+````
+tripwire::local_passphrase: '%{::tripwire_global_passphrase}_LOCAL'
+tripwire::site_passphrase: '%{::tripwire_global_passphrase}'
+tripwire::tripwire_email: '%{::tripwire_tripwire_email}'
+tripwire::tripwire_policy_file: '%{::tripwire_tripwire_policy_file}'
+````
+
 #### TEMPLATES
 Must contain 2 subdirectories.
 - templates - template yaml files
@@ -155,6 +420,7 @@ Path to output Puppetfile.
 *  -o PUPPETFILE_OUTPUT_PATH --puppetfile_output_path PUPPETFILE_OUTPUT_PATH Result Puppetfile path
 *  -e EYAML_KEY_PATH --eyaml_key_pair EYAML_KEY_PATH                         Path to eyaml encryption key pair
 *  -p PUPPET_APPLY --puppet_apply PUPPET_APPLY                               Custom puppet apply command to run
+*    -k --keep-facts                                                        Flag to keep the encrypted facts file in /tmp for analysis
 
 Commands:
 
