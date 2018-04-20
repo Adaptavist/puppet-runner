@@ -113,6 +113,29 @@ def extract_type_from_hash(input)
   res
 end
 
+# function to resolve inter fact references, it should return the last fact name (not value)
+def resolve_fact(fact_name, max_depth=5, current_depth=0)
+  final_val = nil
+  fact_name = fact_name.sub(/%{::/,'').sub(/}/,'')
+  if max_depth == current_depth
+    warning "Fact resolution has reached a depth of 5 facts, aborting lookup"
+  else
+    # attempt to get value
+    val = $all_facts[fact_name] || Facter.value(fact_name) || nil
+
+    if val == "%{::#{fact_name}}"
+      warning "Fact resolves to itself, skipping"
+    elsif val.instance_of?(String) and val.match(/%{::.*.}/)
+      val = resolve_fact(val,max_depth, current_depth + 1)
+    else
+      val = "%{::#{fact_name}}"
+    end
+    final_val = val
+  end
+  final_val
+end
+
+
 begin
     options = Docopt::docopt(doc)
 rescue Docopt::Exit => e
@@ -290,30 +313,60 @@ if options['all'] || options['prepare']
 
       File.open(output_encrypted_facts_file_path, 'w+') do |output_file|
         output_result_default_facts = result_default_facts.deep_merge!(custom_facts, {:merge_hash_arrays => true}).to_yaml
+      
+        # convert final facts to hash for inter fact resolution and also for potential transformations later
+        $all_facts = YAML.load(output_result_default_facts)
+
+        #convert result templat to string
+        result_template = result_template.to_s
+
+        # loop through facts looking for any that reference other facts
+        $all_facts.each do | fact_key, fact_val |
+          if fact_val.instance_of?(String) and fact_val.match(/%{::.*.}/)
+            debug "Fact #{fact_key} references another fact or facts"
+            # find each instance of a fact within the value (it may contain multiple facts
+            # i.e "TEST%{::fact1}TEST%{::fact2}"
+            fact_val.gsub(/}/,"}\n").scan(/%{::.*.}/).each do | fact |
+              # resolve the fact down to its last reference to another fact (not the end value)
+              resolved_fact = resolve_fact(fact)
+              # if the resolved fact name is not the same as the original fact we found referenced
+              # then replace the value in fact_val
+              if !resolved_fact.nil? and resolved_fact != fact
+                fact_val = fact_val.gsub(/#{fact}/,"#{resolved_fact}")
+              end
+            end
+            debug "Attempting to replace fact '#{fact_key}' with value '#{fact_val}' in compiled template"
+            # replace the original fact reference in the template with the resovled value
+            # this is done before global teansformation as they may change the final value again
+            result_template = result_template.gsub(/\"\%{::#{fact_key}}\"/, "\"#{fact_val}\"")
+          end
+        end
+
+        # add comments above any fact lines
         prefixed_facts_comments.each do |pattern, replacement|
           if replacement != nil
             output_result_default_facts.gsub!(/^#{pattern}/, "\##{replacement}\n#{pattern}")
           end
         end
 
+        # write the temp encrypted facts file
         output_file.write(output_result_default_facts)
+
         # now that the merged final facts are present look for any global transformations to apply 
         # global transformations are currently either booleans that need to be expressed directly in 
         # the output file or nilable values that need to be expressed as unquoted tildas (~)
         if !global_data_types.empty?
-          result_template = result_template.to_s
-          all_facts = YAML.load(output_result_default_facts)
           global_data_types.each do | transform |
             transform.each do|transform_type, transform_value|
               begin
                 if transform_type == 'boolean'
                   debug "Attempting to replace boolean value for fact #{transform_value}"
                   # convert the fact to boolean and then back to string during the replace, this allows validation that the fact is actually a boolean
-                  result_template = result_template.gsub(/\"\%{::#{transform_value}}\"/, all_facts[transform_value].to_bool.to_s)
+                  result_template = result_template.gsub(/\"\%{::#{transform_value}}\"/, $all_facts[transform_value].to_bool.to_s)
                 elsif transform_type == 'nilable'
                   # replace fact reference with tilda if the value is nil, empty or already a tilda
                   # due to issues with ruby hash values being unquoted we will quote it now and remove the quotes later
-                  if all_facts[transform_value].nil? or all_facts[transform_value].empty? or all_facts[transform_value] == "~"
+                  if $all_facts[transform_value].nil? or $all_facts[transform_value].empty? or $all_facts[transform_value] == "~"
                     debug "Attempting to replace nilable value for fact #{transform_value}"
                     # replace value with tilda
                     result_template = result_template.gsub(/\"\%{::#{transform_value}}\"/, '"~"')
@@ -326,9 +379,11 @@ if options['all'] || options['prepare']
               end
             end
           end
-          result_template = eval(result_template)
         end
       end
+
+      # convert result_template back to hash
+      result_template = eval(result_template)
 
       # Write results
       File.open(output_file_path, 'w+') do |output_file|
