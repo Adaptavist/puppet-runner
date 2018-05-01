@@ -27,8 +27,8 @@ doc = <<DOCOPT
 Adaptavist puppet runner
 
 Usage:
-  puppet-runner (prepare|all) [-c CONFIG_DIR] [-t TEMPLATES] [-d DESTINATION_DIR] [-f FACTS_DEST] [-s SERVERNAME] [-p PUPPET_APPLY] [-r PUPPETFILE_CONFIG] [-o PUPPETFILE_OUTPUT_PATH] [-e EYAML_KEY_PATH] [-k]
-  puppet-runner start [-p PUPPET_APPLY]
+  puppet-runner (prepare|all) [-c CONFIG_DIR] [-t TEMPLATES] [-d DESTINATION_DIR] [-f FACTS_DEST] [-s SERVERNAME] [-p PUPPET_APPLY] [-r PUPPETFILE_CONFIG] [-o PUPPETFILE_OUTPUT_PATH] [-e EYAML_KEY_PATH] [-k] [-n]
+  puppet-runner start [-p PUPPET_APPLY] -m MODULE_PATH [-n]
   puppet-runner -h | --help
 
 Options:
@@ -43,6 +43,7 @@ Options:
   -o PUPPETFILE_OUTPUT_PATH --puppetfile_output_path PUPPETFILE_OUTPUT_PATH Result Puppetfile path
   -e EYAML_KEY_PATH --eyaml_key_path EYAML_KEY_PATH                         Path to eyaml encryption key pair
   -k --keep-facts                                                           Flag to keep the encrypted facts file in /tmp for analysis
+  -n --dry-run                                                              Flag to indicate puppet should run in dry run mode (--noop), this also sets the verbose flag to true
 Commands:
   all           Runs the following commands prepare, start 
   start         Runs puppet apply 
@@ -156,6 +157,7 @@ if options['all'] || options['prepare']
     hostname = options["--servername"] || options["-s"] || Facter.value("hostname")
     puts "Hostname #{hostname}"
     keep_facts = true if options["-k"] or options["--keep-facts"]
+    
 
     config_file_path = path_join_glob(input_dir, hostname+".yaml")
     templates_dir = path_join_glob(templates, "templates")
@@ -492,8 +494,19 @@ end
 # start puppet
 if (options['start'] || options['all']) && !stop_apply
     require 'puppet'
+
+    #  set dry run option if the flag has been set
+   if options["-n"] or options["--dry-run"]
+      dry_run = '--noop'
+      verbose_output = true
+    else
+      dry_run = ''
+    end
+
     modulefile_definition = Gem::Version.new(Puppet.version) > Gem::Version.new('4.0.0') ? '--modulepath /etc/puppet/modules' : ''
-    puppet_command = "sudo su -c 'source /usr/local/rvm/scripts/rvm; puppet apply /etc/puppet/manifests/site.pp --confdir=/etc/puppet  --verbose --detailed-exitcodes #{modulefile_definition}'"
+    puppet_command = "sudo su -c 'source /usr/local/rvm/scripts/rvm; puppet apply #{dry_run} /etc/puppet/manifests/site.pp --confdir=/etc/puppet  --verbose --detailed-exitcodes #{modulefile_definition}'"
+
+    # if a custom puppet apply command has been set use if, otherwise use the default generated above
     to_execute = options["--puppet_apply"] || options["-p"] || puppet_command
     debug "Running #{to_execute}"
     `#{to_execute}`
@@ -518,3 +531,4 @@ if (options['start'] || options['all']) && !stop_apply
       raise "execute_puppet exit status: #{exit_code}"
     end
 end
+
