@@ -27,7 +27,7 @@ doc = <<DOCOPT
 Adaptavist puppet runner
 
 Usage:
-  puppet-runner (prepare|all) [-c CONFIG_DIR] [-t TEMPLATES] [-d DESTINATION_DIR] [-f FACTS_DEST] [-s SERVERNAME] [-p PUPPET_APPLY] [-r PUPPETFILE_CONFIG] [-o PUPPETFILE_OUTPUT_PATH] [-e EYAML_KEY_PATH] [-k] [-n]
+  puppet-runner (prepare|all) [-c CONFIG_DIR] [-t TEMPLATES] [-d DESTINATION_DIR] [-f FACTS_DEST] [-s SERVERNAME] [-p PUPPET_APPLY] [-r PUPPETFILE_CONFIG] [-o PUPPETFILE_OUTPUT_PATH] [-e EYAML_KEY_PATH] [-m MODULE_PATH] [-k] [-n]
   puppet-runner start [-p PUPPET_APPLY] -m MODULE_PATH [-n]
   puppet-runner -h | --help
 
@@ -38,6 +38,7 @@ Options:
   -d DESTINATION_DIR --dest_dir DESTINATION_DIR                             Directory for result hiera config.
   -t TEMPLATES --templates TEMPLATES                                        Directory containing templates and defaults folder with functionality templates and default facts
   -f FACTS_DEST --facts_dest_dir FACTS_DEST                                 Destination directory to store result facts
+  -m MODULE_PATH --module_path MODULE_PATH                                  Path to find puppet modules, can be colon (:) delimited
   -p PUPPET_APPLY --puppet_apply PUPPET_APPLY                               Custom puppet apply command to run
   -r PUPPETFILE_CONFIG --puppetfile_config puppetfile_config                Puppetfile composition config file
   -o PUPPETFILE_OUTPUT_PATH --puppetfile_output_path PUPPETFILE_OUTPUT_PATH Result Puppetfile path
@@ -496,16 +497,26 @@ if (options['start'] || options['all']) && !stop_apply
     require 'puppet'
 
     #  set dry run option if the flag has been set
-   if options["-n"] or options["--dry-run"]
+    if options["-n"] or options["--dry-run"]
       dry_run = '--noop'
       verbose_output = true
     else
       dry_run = ''
     end
 
-    modulefile_definition = Gem::Version.new(Puppet.version) > Gem::Version.new('4.0.0') ? '--modulepath /etc/puppet/modules' : ''
-    puppet_command = "sudo su -c 'source /usr/local/rvm/scripts/rvm; puppet apply #{dry_run} /etc/puppet/manifests/site.pp --confdir=/etc/puppet  --verbose --detailed-exitcodes #{modulefile_definition}'"
+    # if the user has specified a module path pass it to puppet
+    if options["--module_path"]
+      modulefile_definition = "--modulepath #{options['--module_path']}"
+    elsif options["-m"]
+      modulefile_definition = "--modulepath #{options['-m']}"
+    # if no modulepath has been set default to /etc/puppet/modules for puppet 4 and above and blank for older versions 
+    else
+      modulefile_definition = Gem::Version.new(Puppet.version) > Gem::Version.new('4.0.0') ? '--modulepath /etc/puppet/modules' : ''
+    end
 
+    # construct defaut puppet apply command
+    puppet_command = "sudo su -c 'source /usr/local/rvm/scripts/rvm; puppet apply #{dry_run} /etc/puppet/manifests/site.pp --confdir=/etc/puppet  --verbose --detailed-exitcodes #{modulefile_definition}'"
+    
     # if a custom puppet apply command has been set use if, otherwise use the default generated above
     to_execute = options["--puppet_apply"] || options["-p"] || puppet_command
     debug "Running #{to_execute}"
