@@ -27,8 +27,8 @@ doc = <<DOCOPT
 Adaptavist puppet runner
 
 Usage:
-  puppet-runner (prepare|all) [-c CONFIG_DIR] [-t TEMPLATES] [-d DESTINATION_DIR] [-f FACTS_DEST] [-s SERVERNAME] [-p PUPPET_APPLY] [-r PUPPETFILE_CONFIG] [-o PUPPETFILE_OUTPUT_PATH] [-e EYAML_KEY_PATH] [-m MODULE_PATH] [-k] [-n]
-  puppet-runner start [-p PUPPET_APPLY] -m MODULE_PATH [-n]
+  puppet-runner (prepare|all) [-c CONFIG_DIR] [-t TEMPLATES] [-d DESTINATION_DIR] [-f FACTS_DEST] [-s SERVERNAME] [-p PUPPET_APPLY] [-r PUPPETFILE_CONFIG] [-o PUPPETFILE_OUTPUT_PATH] [-e EYAML_KEY_PATH] [-m MODULE_PATH] [-k] [-n] [-v]
+  puppet-runner start [-p PUPPET_APPLY] -m MODULE_PATH [-n] [-v]
   puppet-runner -h | --help
 
 Options:
@@ -45,6 +45,7 @@ Options:
   -e EYAML_KEY_PATH --eyaml_key_path EYAML_KEY_PATH                         Path to eyaml encryption key pair
   -k --keep-facts                                                           Flag to keep the encrypted facts file in /tmp for analysis
   -n --dry-run                                                              Flag to indicate puppet should run in dry run mode (--noop), this also sets the verbose flag to true
+  -v --verbose                                                              Flag to indicate that all output from puppet apply should be displayed instead of just stdout
 Commands:
   all           Runs the following commands prepare, start 
   start         Runs puppet apply 
@@ -495,6 +496,14 @@ end
 # start puppet
 if (options['start'] || options['all']) && !stop_apply
     require 'puppet'
+    require 'open3'
+
+    # set verbose_output option if the flag has been set
+    if options["-v"] or options["--verbose"]
+      verbose_output = true 
+    else
+      verbose_output = false
+    end
 
     #  set dry run option if the flag has been set
     if options["-n"] or options["--dry-run"]
@@ -520,8 +529,20 @@ if (options['start'] || options['all']) && !stop_apply
     # if a custom puppet apply command has been set use if, otherwise use the default generated above
     to_execute = options["--puppet_apply"] || options["-p"] || puppet_command
     debug "Running #{to_execute}"
-    `#{to_execute}`
-    exit_code = $?.exitstatus
+    
+    # execute puppet apply and capture return code
+    exit_code = nil
+    result = Open3.popen3(to_execute) do |stdin, stdout, stderr, thread|
+      while err=stderr.gets do 
+        puts(err) 
+      end
+      if verbose_output
+        while out=stdout.gets do 
+          puts(out) 
+        end
+      end
+      exit_code = thread.value.exitstatus # get the exit status
+    end
 
     # attempt to remove the fact file as its unencrypted (we do not care about exit status)
     fact_file_location = Facter.value("facter_file_location")
@@ -538,7 +559,10 @@ if (options['start'] || options['all']) && !stop_apply
       warning "Unable to locate Facts file, please urgently locate and remove this as it holds unencrypted values"
     end
 
-    if exit_code != 2
+    # if we see a bad exit code report it, for refrerence good codes are:
+    # 0: The run succeeded with no changes or failures; the system was already in the desired state.
+    # 2: The run succeeded, and some resources were changed.
+    if exit_code != 2 and exit_code != 0
       raise "execute_puppet exit status: #{exit_code}"
     end
 end
