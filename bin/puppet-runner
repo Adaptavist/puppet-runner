@@ -28,7 +28,7 @@ Adaptavist puppet runner
 
 Usage:
   puppet-runner (prepare|all) [-c CONFIG_DIR] [-t TEMPLATES] [-d DESTINATION_DIR] [-f FACTS_DEST] [-s SERVERNAME] [-p PUPPET_APPLY] [-r PUPPETFILE_CONFIG] [-o PUPPETFILE_OUTPUT_PATH] [-e EYAML_KEY_PATH] [-m MODULE_PATH] [-k] [-n] [-v]
-  puppet-runner start [-p PUPPET_APPLY] -m MODULE_PATH [-n] [-v]
+  puppet-runner start [-p PUPPET_APPLY] [-m MODULE_PATH] [-n] [-v]
   puppet-runner -h | --help
 
 Options:
