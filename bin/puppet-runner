@@ -27,8 +27,8 @@ doc = <<DOCOPT
 Adaptavist puppet runner
 
 Usage:
-  puppet-runner (prepare|all) [-c CONFIG_DIR] [-t TEMPLATES] [-d DESTINATION_DIR] [-f FACTS_DEST] [-s SERVERNAME] [-p PUPPET_APPLY] [-r PUPPETFILE_CONFIG] [-o PUPPETFILE_OUTPUT_PATH] [-e EYAML_KEY_PATH] [-k]
-  puppet-runner start [-p PUPPET_APPLY]
+  puppet-runner (prepare|all) [-c CONFIG_DIR] [-t TEMPLATES] [-d DESTINATION_DIR] [-f FACTS_DEST] [-s SERVERNAME] [-p PUPPET_APPLY] [-r PUPPETFILE_CONFIG] [-o PUPPETFILE_OUTPUT_PATH] [-e EYAML_KEY_PATH] [-m MODULE_PATH] [-k] [-n] [-v]
+  puppet-runner start [-p PUPPET_APPLY] -m MODULE_PATH [-n] [-v]
   puppet-runner -h | --help
 
 Options:
@@ -38,11 +38,14 @@ Options:
   -d DESTINATION_DIR --dest_dir DESTINATION_DIR                             Directory for result hiera config.
   -t TEMPLATES --templates TEMPLATES                                        Directory containing templates and defaults folder with functionality templates and default facts
   -f FACTS_DEST --facts_dest_dir FACTS_DEST                                 Destination directory to store result facts
+  -m MODULE_PATH --module_path MODULE_PATH                                  Path to find puppet modules, can be colon (:) delimited
   -p PUPPET_APPLY --puppet_apply PUPPET_APPLY                               Custom puppet apply command to run
   -r PUPPETFILE_CONFIG --puppetfile_config puppetfile_config                Puppetfile composition config file
   -o PUPPETFILE_OUTPUT_PATH --puppetfile_output_path PUPPETFILE_OUTPUT_PATH Result Puppetfile path
   -e EYAML_KEY_PATH --eyaml_key_path EYAML_KEY_PATH                         Path to eyaml encryption key pair
   -k --keep-facts                                                           Flag to keep the encrypted facts file in /tmp for analysis
+  -n --dry-run                                                              Flag to indicate puppet should run in dry run mode (--noop), this also sets the verbose flag to true
+  -v --verbose                                                              Flag to indicate that all output from puppet apply should be displayed instead of just stdout
 Commands:
   all           Runs the following commands prepare, start 
   start         Runs puppet apply 
@@ -156,6 +159,7 @@ if options['all'] || options['prepare']
     hostname = options["--servername"] || options["-s"] || Facter.value("hostname")
     puts "Hostname #{hostname}"
     keep_facts = true if options["-k"] or options["--keep-facts"]
+    
 
     config_file_path = path_join_glob(input_dir, hostname+".yaml")
     templates_dir = path_join_glob(templates, "templates")
@@ -492,12 +496,53 @@ end
 # start puppet
 if (options['start'] || options['all']) && !stop_apply
     require 'puppet'
-    modulefile_definition = Gem::Version.new(Puppet.version) > Gem::Version.new('4.0.0') ? '--modulepath /etc/puppet/modules' : ''
-    puppet_command = "sudo su -c 'source /usr/local/rvm/scripts/rvm; puppet apply /etc/puppet/manifests/site.pp --confdir=/etc/puppet  --verbose --detailed-exitcodes #{modulefile_definition}'"
+    require 'open3'
+
+    # set verbose_output option if the flag has been set
+    if options["-v"] or options["--verbose"]
+      verbose_output = true 
+    else
+      verbose_output = false
+    end
+
+    #  set dry run option if the flag has been set
+    if options["-n"] or options["--dry-run"]
+      dry_run = '--noop'
+      verbose_output = true
+    else
+      dry_run = ''
+    end
+
+    # if the user has specified a module path pass it to puppet
+    if options["--module_path"]
+      modulefile_definition = "--modulepath #{options['--module_path']}"
+    elsif options["-m"]
+      modulefile_definition = "--modulepath #{options['-m']}"
+    # if no modulepath has been set default to /etc/puppet/modules for puppet 4 and above and blank for older versions 
+    else
+      modulefile_definition = Gem::Version.new(Puppet.version) > Gem::Version.new('4.0.0') ? '--modulepath /etc/puppet/modules' : ''
+    end
+
+    # construct defaut puppet apply command
+    puppet_command = "sudo su -c 'source /usr/local/rvm/scripts/rvm; puppet apply #{dry_run} /etc/puppet/manifests/site.pp --confdir=/etc/puppet  --verbose --detailed-exitcodes #{modulefile_definition}'"
+    
+    # if a custom puppet apply command has been set use if, otherwise use the default generated above
     to_execute = options["--puppet_apply"] || options["-p"] || puppet_command
     debug "Running #{to_execute}"
-    `#{to_execute}`
-    exit_code = $?.exitstatus
+    
+    # execute puppet apply and capture return code
+    exit_code = nil
+    result = Open3.popen3(to_execute) do |stdin, stdout, stderr, thread|
+      while err=stderr.gets do 
+        puts(err) 
+      end
+      if verbose_output
+        while out=stdout.gets do 
+          puts(out) 
+        end
+      end
+      exit_code = thread.value.exitstatus # get the exit status
+    end
 
     # attempt to remove the fact file as its unencrypted (we do not care about exit status)
     fact_file_location = Facter.value("facter_file_location")
@@ -514,7 +559,11 @@ if (options['start'] || options['all']) && !stop_apply
       warning "Unable to locate Facts file, please urgently locate and remove this as it holds unencrypted values"
     end
 
-    if exit_code != 2
+    # if we see a bad exit code report it, for refrerence good codes are:
+    # 0: The run succeeded with no changes or failures; the system was already in the desired state.
+    # 2: The run succeeded, and some resources were changed.
+    if exit_code != 2 and exit_code != 0
       raise "execute_puppet exit status: #{exit_code}"
     end
 end
+

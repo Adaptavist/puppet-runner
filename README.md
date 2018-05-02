@@ -421,6 +421,10 @@ Path to output Puppetfile.
 *  -e EYAML_KEY_PATH --eyaml_key_pair EYAML_KEY_PATH                         Path to eyaml encryption key pair
 *  -p PUPPET_APPLY --puppet_apply PUPPET_APPLY                               Custom puppet apply command to run
 *    -k --keep-facts                                                        Flag to keep the encrypted facts file in /tmp for analysis
+*  -n --dry-run                                                              Flag to indicate puppet should run in dry run mode (--noop), this also sets the verbose flag to true
+*  -v --verbose                                                              Flag to indicate that all output from puppet apply should be displayed instead of just stdout
+Commands:
+
 
 Commands:
 
