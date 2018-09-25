@@ -27,7 +27,7 @@ doc = <<DOCOPT
 Adaptavist puppet runner
 
 Usage:
-  puppet-runner (prepare|all) [-c CONFIG_DIR] [-t TEMPLATES] [-d DESTINATION_DIR] [-f FACTS_DEST] [-s SERVERNAME] [-p PUPPET_APPLY] [-r PUPPETFILE_CONFIG] [-o PUPPETFILE_OUTPUT_PATH] [-e EYAML_KEY_PATH] [-m MODULE_PATH] [-k] [-n] [-v]
+  puppet-runner (prepare|all) [-c CONFIG_DIR] [-t TEMPLATES] [-d DESTINATION_DIR] [-f FACTS_DEST] [-s SERVERNAME] [-p PUPPET_APPLY] [-r PUPPETFILE_CONFIG] [-o PUPPETFILE_OUTPUT_PATH] [-e EYAML_KEY_PATH] [-m MODULE_PATH] [-x CUSTOM_FACTS_DIR] [-k] [-n] [-v]
   puppet-runner start [-p PUPPET_APPLY] [-m MODULE_PATH] [-n] [-v]
   puppet-runner -h | --help
 
@@ -38,6 +38,7 @@ Options:
   -d DESTINATION_DIR --dest_dir DESTINATION_DIR                             Directory for result hiera config.
   -t TEMPLATES --templates TEMPLATES                                        Directory containing templates and defaults folder with functionality templates and default facts
   -f FACTS_DEST --facts_dest_dir FACTS_DEST                                 Destination directory to store result facts
+  -x CUSTOM_FACTS_DIR --custom_facts_dir CUSTOM_FACTS_DIR                   Directory containing yaml files with custom facts that will be merged with ones from <hostname>_facts.yaml, custom facts can overwrite them 
   -m MODULE_PATH --module_path MODULE_PATH                                  Path to find puppet modules, can be colon (:) delimited
   -p PUPPET_APPLY --puppet_apply PUPPET_APPLY                               Custom puppet apply command to run
   -r PUPPETFILE_CONFIG --puppetfile_config puppetfile_config                Puppetfile composition config file
@@ -152,6 +153,7 @@ if options['all'] || options['prepare']
     input_dir = options["--config_dir"] || options["-c"] 
     dest_dir = options["--dest_dir"] || options["-d"]
     facts_dest_dir = options["--facts_dest_dir"] || options["-f"]
+    custom_facts_dir = options["--custom_facts_dir"] || options["-x"] || nil
     templates = options["--templates"] || options["-t"]
     puppetfile_config_path = options["--puppetfile_config"] || options["-r"]
     puppetfile_output_path = options["--puppetfile_output_path"] || options["-o"]
@@ -353,8 +355,19 @@ if options['all'] || options['prepare']
           end
         end
 
+        # merge custom facts if parameter provided
+        custom_facts_all = {}
+        if (custom_facts_dir)
+          Dir.glob("#{custom_facts_dir}/*.yaml").sort.each do |custom_facts_file|
+            custom_facts_from_file = YAML.load_file(custom_facts_file) || {}
+            custom_facts_all.merge!(custom_facts_from_file)
+          end
+        end
+        # merge, prefer custom facts
+        merged_all_facts = YAML.load(output_result_default_facts).merge!(custom_facts_all)
+
         # write the temp encrypted facts file
-        output_file.write(output_result_default_facts)
+        output_file.write(merged_all_facts.to_yaml)
 
         # now that the merged final facts are present look for any global transformations to apply 
         # global transformations are currently either booleans that need to be expressed directly in 
@@ -441,7 +454,6 @@ if options['all'] || options['prepare']
               end
             }
         end
-
         output_file.write(decrypted.join)
       end
 

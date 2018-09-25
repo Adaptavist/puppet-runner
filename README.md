@@ -8,7 +8,7 @@ Executable gem that composes hiera configuration and facts and execute puppet ap
 
 ## Usage
 
-*  puppet-runner (prepare|all) [-c CONFIG_DIR] [-t TEMPLATES] [-d DESTINATION_DIR] [-f FACTS_DEST] [-s SERVERNAME] [-r PUPPETFILE_CONFIG] [-o PUPPETFILE_OUTPUT_PATH] [-e EYAML_KEY_PATH]
+*  puppet-runner (prepare|all) [-c CONFIG_DIR] [-t TEMPLATES] [-d DESTINATION_DIR] [-f FACTS_DEST] [-s SERVERNAME] [-r PUPPETFILE_CONFIG] [-o PUPPETFILE_OUTPUT_PATH] [-e EYAML_KEY_PATH] [-x CUSTOM_FACTS_DIR]
 *  puppet-runner start [-p PUPPET_APPLY]
 *  puppet-runner -h | --help
 
@@ -416,6 +416,7 @@ Path to output Puppetfile.
 *  -d DESTINATION_DIR --dest_dir DESTINATION_DIR   Directory for result hiera config.
 *  -t TEMPLATES --templates TEMPLATES              Directory containing templates and defaults folder with functionality templates and default facts
 *  -f FACTS_DEST --facts_dest_dir FACTS_DEST       Destination directory to store result facts
+*  -x CUSTOM_FACTS_DIR --custom_facts_dir CUSTOM_FACTS_DIR                   Directory containing yaml files with custom facts that will be merged with ones from <hostname>_facts.yaml, custom facts can overwrite them 
 *  -r PUPPETFILE_CONFIG --puppetfile_config puppetfile_config                Puppetfile composition config file
 *  -o PUPPETFILE_OUTPUT_PATH --puppetfile_output_path PUPPETFILE_OUTPUT_PATH Result Puppetfile path
 *  -e EYAML_KEY_PATH --eyaml_key_pair EYAML_KEY_PATH                         Path to eyaml encryption key pair
