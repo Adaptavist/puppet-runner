@@ -508,14 +508,6 @@ end
 # start puppet
 if (options['start'] || options['all']) && !stop_apply
     require 'puppet'
-    require 'open3'
-
-    # set verbose_output option if the flag has been set
-    if options["-v"] or options["--verbose"]
-      verbose_output = true 
-    else
-      verbose_output = false
-    end
 
     #  set dry run option if the flag has been set
     if options["-n"] or options["--dry-run"]
@@ -543,18 +535,8 @@ if (options['start'] || options['all']) && !stop_apply
     debug "Running #{to_execute}"
     
     # execute puppet apply and capture return code
-    exit_code = nil
-    result = Open3.popen3(to_execute) do |stdin, stdout, stderr, thread|
-      while err=stderr.gets do 
-        puts(err) 
-      end
-      if verbose_output
-        while out=stdout.gets do 
-          puts(out) 
-        end
-      end
-      exit_code = thread.value.exitstatus # get the exit status
-    end
+    `#{to_execute}`
+    exit_code = $?.exitstatus
 
     # attempt to remove the fact file as its unencrypted (we do not care about exit status)
     fact_file_location = Facter.value("facter_file_location")
