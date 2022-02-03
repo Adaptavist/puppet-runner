@@ -118,7 +118,7 @@ def extract_type_from_hash(input)
 end
 
 # function to resolve inter fact references, it should return the last fact name (not value)
-def resolve_fact(fact_name, max_depth=5, current_depth=0)
+def resolve_fact(fact_name, max_depth=5, current_depth=0, return_fact_value=false)
   final_val = nil
   fact_name = fact_name.sub(/%{::/,'').sub(/}/,'')
   if max_depth == current_depth
@@ -132,7 +132,8 @@ def resolve_fact(fact_name, max_depth=5, current_depth=0)
     elsif val.instance_of?(String) and val.match(/%{::.*.}/)
       val = resolve_fact(val,max_depth, current_depth + 1)
     else
-      val = "%{::#{fact_name}}"
+      # if we have not been told to return the fact value, then return the fact key, else the value wil be returned
+      val = "%{::#{fact_name}}" if return_fact_value == false
     end
     final_val = val
   end
@@ -333,8 +334,17 @@ if options['all'] || options['prepare']
             # find each instance of a fact within the value (it may contain multiple facts
             # i.e "TEST%{::fact1}TEST%{::fact2}"
             fact_val.gsub(/}/,"}\n").scan(/%{::.*.}/).each do | fact |
-              # resolve the fact down to its last reference to another fact (not the end value)
-              resolved_fact = resolve_fact(fact)
+              # if the fact is part of a larger string set a flag to tell resolve_fact 
+              # to return the final fact value instead of the finalfact key!
+              if fact.length != fact_val.length
+                  return_fact_value = true
+              else
+                  return_fact_value = false
+              end
+
+              # resolve the fact down to its last reference to another fact (not the end value) if return_fact_value is false
+              # or down to the end value if return_fact_value is true
+              resolved_fact = resolve_fact(fact, 5, 0, return_fact_value)
               # if the resolved fact name is not the same as the original fact we found referenced
               # then replace the value in fact_val
               if !resolved_fact.nil? and resolved_fact != fact
@@ -344,7 +354,7 @@ if options['all'] || options['prepare']
             debug "Attempting to replace fact '#{fact_key}' with value '#{fact_val}' in compiled template"
             # replace the original fact reference in the template with the resovled value
             # this is done before global teansformation as they may change the final value again
-            result_template = result_template.gsub(/\"\%{::#{fact_key}}\"/, "\"#{fact_val}\"")
+            result_template = result_template.gsub(/\%{::#{fact_key}}/, "#{fact_val}")
           end
         end
 
