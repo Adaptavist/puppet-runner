@@ -130,7 +130,7 @@ def resolve_fact(fact_name, max_depth=5, current_depth=0, return_fact_value=fals
     if val == "%{::#{fact_name}}"
       warning "Fact resolves to itself, skipping"
     elsif val.instance_of?(String) and val.match(/%{::.*.}/)
-      val = resolve_fact(val,max_depth, current_depth + 1)
+      val = resolve_fact(val, max_depth, current_depth + 1, return_fact_value)
     else
       # if we have not been told to return the fact value, then return the fact key, else the value wil be returned
       val = "%{::#{fact_name}}" if return_fact_value == false
