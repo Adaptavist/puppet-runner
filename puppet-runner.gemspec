@@ -4,7 +4,7 @@ $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 
 Gem::Specification.new do |spec|
   spec.name          = "puppet-runner"
-  spec.version       = "0.0.26"
+  spec.version       = "0.0.27"
   spec.authors       = ["Martin Brehovsky", "Matthew Hope"]
   spec.email         = ["mbrehovsky@adaptavist.com"]
   spec.summary       = %q{Preprocessor for hiera config}
@@ -17,7 +17,7 @@ Gem::Specification.new do |spec|
   spec.test_files    = spec.files.grep(%r{^(test|spec|features)/})
   spec.require_paths = ["lib"]
 
-  spec.add_development_dependency "bundler", "2.2.10"
+  spec.add_development_dependency "bundler", "2.2.33"
   spec.add_development_dependency "rake"
   spec.add_dependency "docopt", ">= 0.5.0"
   spec.add_dependency "colorize", ">= 0.7.3"
